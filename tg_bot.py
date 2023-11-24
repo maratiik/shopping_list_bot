@@ -258,8 +258,8 @@ adding = False
 
 bot = telebot.TeleBot(TOKEN)
 
-shopping_list = unpickle_sl()
-#shopping_list = []
+#shopping_list = unpickle_sl()
+shopping_list = []
 checked_items = []
 menu = {ADD: ADD_TEXT, LIST: LIST_TEXT, REMOVE: REMOVE_TEXT, HELP: HELP_TEXT}
 
