@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block body %}
+
+<div class="container mt-5">
+    <h1>Your products</h1>
+    <div class="row mb-3">
+        {% for el in items %}
+        <div class="col-md-6 d-flex">
+            <div class="card border flex-fill">
+                <div class="card-body">
+                    <h5 class="card-title">{{ el.name }} {{ el.url }}</h5>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+
+
+{% endblock %}
