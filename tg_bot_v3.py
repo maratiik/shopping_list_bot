@@ -4,12 +4,12 @@ from telebot import types
 from settings import *
 from sqlalchemy import create_engine, select, desc, delete, update
 from sqlalchemy.orm import sessionmaker
-from db import Item
+from db import Item, Log, History
 from app import APP_PATH
 
 
 ###########################
-##### Import database #####
+##### Import databases #####
 ###########################
 
 
@@ -33,6 +33,13 @@ def get_items():
     items = session.execute(query)
     items_list = [row for row in items]
     return items_list
+
+def add_to_history(name):
+    query = select(Item.id, Item.name, Item.url).where(Item.name == name)
+    data = session.execute(query)
+    item_data = [row for row in data]
+
+    log(f'ADDED_TO_HISTORY {name}')
 
 
 def help_keyboard():
@@ -94,9 +101,11 @@ def remove_keyboard():
         if i[3]:
             text = i[0] + i[2] * '❗️' + '☑️'
             cb_data = f'checked_{i[0]}'
+            print(f'checking {i[0]}')
         else:
             text = i[0] + i[2] * '❗️'
             cb_data = f'notchecked_{i[0]}'
+            print(f'unchecking {i[0]}')
 
         markup.add(types.InlineKeyboardButton(
             text=text,
@@ -149,6 +158,12 @@ def update_list_keyboard(call):
 
 def remove_checked_items():
     delete_condition = Item.checked == True
+
+    query_checked = select(Item.name, Item.url).where(delete_condition)
+    items = session.execute(query_checked)
+    items_list = [row for row in items]
+    update_history(items_list)
+
     query = delete(Item).where(delete_condition)
 
     session.execute(query)
@@ -157,8 +172,21 @@ def remove_checked_items():
 
 def remove_all():
     query = delete(Item)
+
+    query_all = select(Item.name, Item.url)
+    items = session.execute(query_all)
+    items_list = [row for row in items]
+    update_history(items_list)
+
     session.execute(query)
     session.commit()
+
+
+def update_history(items):
+    for i in items:
+        data = History(name=i[0], url=i[1])
+        session.add(data)
+        session.commit()
 
 
 def add_items(message):
@@ -186,6 +214,11 @@ def add_priority(item_name):
     session.commit()
 
 
+def log(command):
+    data = Log(command=command)
+    session.add(data)
+    session.commit()
+
 
 #####################
 ##### Variables #####
@@ -209,6 +242,7 @@ def start(message):
         'Меню',
         reply_markup=menu_keyboard()
     )
+    log(f'/start')
 
 
 @bot.message_handler(func=add_items)
@@ -227,6 +261,9 @@ def add_to_list(message):
         data = Item(name=item_name, url=item_url)
         session.add(data)
         session.commit()
+
+        log(f'/add {item_name} {item_url}')
+
 
     bot.reply_to(message, 'Добавлено!')
 
@@ -262,6 +299,8 @@ def callback_handler(call):
                 reply_markup=list_keyboard()
             )
 
+        log(f'/list')
+
     elif call.data == BACK:
         bot.edit_message_text(
             chat_id=call.message.chat.id,
@@ -270,6 +309,8 @@ def callback_handler(call):
             reply_markup=menu_keyboard()
         )
         adding = False
+
+        log(f'/back')
 
     elif call.data == ADD:
         global message_to_edit
@@ -282,6 +323,8 @@ def callback_handler(call):
             reply_markup=add_keyboard())
 
         adding = True
+
+        log(f'/add')
 
     elif call.data == REMOVE:
         if len(items) == 0:
@@ -297,13 +340,21 @@ def callback_handler(call):
                 reply_markup=remove_keyboard()
             )
 
+        log(f'/remove')
+
     elif call.data.startswith('checked_'):
         item_name = call.data.split('_', 1)[1]
         check_uncheck(item_name, False)
+        update_remove_keyboard(call)
+
+        log(f'/check {item_name}')
 
     elif call.data.startswith('notchecked_'):
         item_name = call.data.split('_', 1)[1]
         check_uncheck(item_name, True)
+        update_remove_keyboard(call)
+
+        log(f'/uncheck {item_name}')
 
     elif call.data == REMOVE_CHECKED:
         remove_checked_items()
@@ -313,6 +364,8 @@ def callback_handler(call):
             'Вроде удалил'
         )
 
+        log(f'/remove_checked')
+
     elif call.data == REMOVE_ALL:
         remove_all()
         update_remove_keyboard(call)
@@ -320,6 +373,8 @@ def callback_handler(call):
             call.id,
             'Все удалено!'
         )
+
+        log(f'/remove_all')
 
     elif call.data == HELP:
         bot.edit_message_text(
@@ -329,10 +384,14 @@ def callback_handler(call):
             reply_markup=help_keyboard()
         )
 
+        log(f'/help')
+
     for item in items:
         if call.data == item[0]:
             add_priority(item[0])
             update_list_keyboard(call)
+
+            log(f'/update_priority {item[0]}')
 
 
 bot.infinity_polling()

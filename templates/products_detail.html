@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block body %}
+
+<div class="container mt-5">
+    <h1>{{ item.name }}</h1>
+    <div class="alert alert-info">
+        <h2>{{ item.name }}</h2>
+        <p>ID: {{ item.id }}</p>
+        <a href="{{ item.url }}">URL</a>
+        <p>Priority: {{ item.priority }}</p>
+        <p>Date: {{ item.date.date() }}</p>
+        <a href="/products/{{ item.id }}/edit" class="btn btn-success">Edit</a>
+        <a href="/products/{{ item.id }}/delete" class="btn btn-danger">Delete</a>
+    </div>
+</div>
+
+
+
+{% endblock %}
