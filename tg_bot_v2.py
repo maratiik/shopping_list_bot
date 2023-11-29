@@ -11,7 +11,7 @@ import pathlib
 
 
 PICKLE = pathlib.Path('shopping_list.pickle').resolve()
-TOKEN = '6489686700:AAGvaOAVkzLrxM3naxmXYHgD98snoi3784Q'
+TOKEN = '6889532869:AAFLgNYY4GT3NFB9smPV9KpXjVJuyW4rPkE'
 
 ADD = 'add'
 ADD_TEXT = 'Добавить ➕'
@@ -38,11 +38,11 @@ HELP_TEXT = 'Помощь ❓'
 HTTP = 'http'
 
 HELP_MESSAGE = '''
-- Чтобы добавить что-то, напишите сообщение в виде:
+·Чтобы добавить что-то, напишите сообщение в виде:
 '<наименование 1> <URL 1>, <наименование 2> <URL 2>' (URL необязателен);
-- Чтобы удалить что-то, выберите это в списке пункта 'Удалить', затем нажмите 'Удалить отмеченное';
-- Чтобы удалить все сразу, нажмите 'Удалить все' в пункте 'Удалить';
-- Чтобы поменять приоритет закупки, нажмите на ее название в общем списке.
+·Чтобы удалить что-то, выберите это в списке пункта 'Удалить', затем нажмите 'Удалить отмеченное';
+·Чтобы удалить все сразу, нажмите 'Удалить все' в пункте 'Удалить';
+·Чтобы поменять приоритет закупки, нажмите на ее название в общем списке.
 '''
 
 ##### Item class #####
@@ -91,7 +91,8 @@ def pickle_sl():
         pickle.dump(shopping_list, f)
 
 def sort_list():
-    return sorted(shopping_list, key=lambda item: item.priority, reverse=True)
+    new_list = sorted(shopping_list, key=lambda item: item.priority, reverse=True)
+    return new_list
 
 def add_keyboard():
     '''
@@ -106,20 +107,6 @@ def add_keyboard():
     markup.add(btn_back)
     return markup
 
-def help_keyboard():
-    '''
-    Draws HELP keyboard
-
-    *help*
-    BACK
-
-    '''
-    btn_back = types.InlineKeyboardButton(BACK_TEXT, callback_data=BACK)
-    markup = types.InlineKeyboardMarkup()
-    markup.add(btn_back)
-    return markup
-
-
 def list_keyboard():
     '''
     Draws LIST keyboard:
@@ -130,6 +117,8 @@ def list_keyboard():
     BACK
 
     '''
+    shopping_list = sort_list()
+
     markup = types.InlineKeyboardMarkup(
         keyboard=[
             [
@@ -185,12 +174,10 @@ def remove_keyboard():
 
     for item in shopping_list:
         if item.name in checked_items:
-            text = item.name + ' ' + item.priority * '❗️' + ' ☑️'
+            text = f'{item.name} ☑️'
             cb_data = f'checked_{item.name}'
-            #print(type(text))
         else:
-            text = item.name + ' ' + item.priority * '❗️'
-
+            text = item.name
             cb_data = f'notchecked_{item.name}'
 
         markup.add(types.InlineKeyboardButton(
@@ -224,6 +211,9 @@ def update_remove_keyboard(call):
         bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=keyboard)
 
 def update_list_keyboard(call):
+    '''
+    Updated list_keyboard, usually after changing priority
+    '''
     keyboard = list_keyboard()
     bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=keyboard)
 
@@ -258,8 +248,7 @@ adding = False
 
 bot = telebot.TeleBot(TOKEN)
 
-#shopping_list = unpickle_sl()
-shopping_list = []
+shopping_list = unpickle_sl()
 checked_items = []
 menu = {ADD: ADD_TEXT, LIST: LIST_TEXT, REMOVE: REMOVE_TEXT, HELP: HELP_TEXT}
 
@@ -291,11 +280,11 @@ def add(message):
             item_name = item
         product = Item(item_name, item_url)
         shopping_list.append(product)
-    #bot.edit_message_text(chat_id=message.chat.id, message_id=message.message_id,
-    #                      text='Меню', reply_markup=menu_keyboard())
-    bot.reply_to(message, 'Добавлено!')
-    bot.edit_message_text(chat_id=message.chat.id, message_id=message_to_edit,
+    bot.edit_message_text(chat_id=message.chat.id, message_id=message.message_id-1,
                           text='Меню', reply_markup=menu_keyboard())
+    bot.reply_to(message, 'Добавлено!')
+
+    pickle_sl()
 
 
 
@@ -308,36 +297,27 @@ def callback_handler(call):
     '''
     Checks which buttons are clicked
     '''
-    global adding
-    global shopping_list
-
     if call.data == LIST:
         if len(shopping_list) == 0:
             bot.answer_callback_query(call.id, 'Список пуст!')
         else:
-            shopping_list = sort_list()
             bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                                   text='Список', reply_markup=list_keyboard())
 
     elif call.data == BACK:
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                           text='Меню', reply_markup=menu_keyboard())
-        adding = False
 
     elif call.data == ADD:
-        global message_to_edit
-        message_to_edit = call.message.message_id
-
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                           text='Что добавить?', reply_markup=add_keyboard())
-
+        global adding
         adding = True
 
     elif call.data == REMOVE:
         if len(shopping_list) == 0:
             bot.answer_callback_query(call.id, 'Нечего удалять!')
         else:
-            shopping_list = sort_list()
             bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                                   text='Удаляем-с', reply_markup=remove_keyboard())
 
@@ -367,14 +347,11 @@ def callback_handler(call):
         bot.answer_callback_query(call.id, 'Всё удалено!')
 
     elif call.data == HELP:
-        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                              text=HELP_MESSAGE, reply_markup=help_keyboard())
+        bot.send_message(call.message.chat.id, HELP_MESSAGE)
 
     for item in shopping_list:
         if call.data == item.name:
             item.add_priority()
             update_list_keyboard(call)
-
-    pickle_sl()
 
 bot.infinity_polling()
