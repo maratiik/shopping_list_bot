@@ -1,6 +1,7 @@
 from aiogram.fsm.state import StatesGroup, State
 
 class BotState(StatesGroup):
-    menu = State()
-    add = State()
-    remove = State()
+    _menu = State()
+    _add = State()
+    _list = State()
+    _remove = State()

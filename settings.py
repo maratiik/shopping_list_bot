@@ -1,4 +1,5 @@
 TOKEN = '6889532869:AAFLgNYY4GT3NFB9smPV9KpXjVJuyW4rPkE'
+
 ADD = 'add'
 ADD_TEXT = 'Добавить ➕'
 ADD_CANCEL_TEXT = 'Вернуться назад 🔙'
@@ -22,6 +23,9 @@ HELP = 'help'
 HELP_TEXT = 'Помощь ❓'
 
 HTTP = 'http'
+
+CHECKED = 'checked_'
+NOT_CHECKED = 'notchecked_'
 
 HELP_MESSAGE = '''
 ·Чтобы добавить что-то, напишите сообщение в виде:

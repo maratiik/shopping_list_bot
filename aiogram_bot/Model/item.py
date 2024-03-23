@@ -47,7 +47,7 @@ def remove_all():
     connection.close()
 
 
-def add(name, url):
+def add(name, url=''):
     connection = sqlite3.connect("items.db")
     cursor = connection.cursor()
 
@@ -79,3 +79,27 @@ def check_uncheck(name, set_to):
 
     connection.commit()
     connection.close()
+
+def get_count():
+    connection = sqlite3.connect("items.db")
+    cursor = connection.cursor()
+
+    cursor.execute('SELECT COUNT(*) FROM item')
+
+    return cursor.fetchall()[0][0]
+
+def print_if(s):
+    items = get_all()
+    f = lambda s: any(s == item[0] for item in items)
+    if f == True:
+        print('true')
+    else:
+        print('false')
+
+if __name__ == '__main__':
+    create()
+    # add('a')
+    # add('b')
+    # add('c')
+    # add('d')
+    print_if('a')
