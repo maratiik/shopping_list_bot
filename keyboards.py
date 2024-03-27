@@ -2,14 +2,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 import asyncio
 from texts import *
-from typing import NamedTuple
-
-
-class Item(NamedTuple):
-    name: str
-    quantity: int
-    checked: bool = False
-
+from model import ItemData
 
 def menu_keyboard() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
@@ -20,7 +13,7 @@ def menu_keyboard() -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
-def keyboard_from_items(items: list, removing: bool) -> InlineKeyboardMarkup:
+def keyboard_from_items(items: list[ItemData], removing: bool) -> InlineKeyboardMarkup:
     if removing:
         builder = InlineKeyboardBuilder()
         for item in items:
@@ -58,24 +51,24 @@ def btn_back() -> InlineKeyboardButton:
 
 
 # item = (name, quantity, url, priority, checked)
-def make_item_text(item: tuple, removing: bool = False) -> str:
+def make_item_text(item: ItemData, removing: bool = False) -> str:
     if removing:
-        if item[1] > 1:
-            return f"{item[0]} x{item[1]} {item[4] * '☑️'}"
-        return f"{item[0]} {item[4] * '☑️'}"
+        if item.quantity > 1:
+            return f"{item.name} x{item.quantity} {item.checked * '☑️'}"
+        return f"{item.name} {item.checked * '☑️'}"
 
-    if item[1] > 1:
-        return f"{item[0]} x{item[1]} {item[3] * '❕'}"
-    return f"{item[0]} {item[3] * '❕'}"
-
-
-def make_item_url(item: tuple) -> str:
-    return item[2]
+    if item.quantity > 1:
+        return f"{item.name} x{item.quantity} {item.priority * '❕'}"
+    return f"{item.name} {item.priority * '❕'}"
 
 
-def make_item_cb_removing(item: tuple) -> str:
-    return f"checked_{item[0]}" if item[4] == 1 else f"notchecked_{item[0]}"
+def make_item_url(item: ItemData) -> str:
+    return item.url
+
+
+def make_item_cb_removing(item: ItemData) -> str:
+    return f"checked_{item.name}" if item.checked == True else f"notchecked_{item.name}"
 
 
 def make_item_cb(item: tuple) -> str:
-    return f"item_{item[0]}"
+    return f"item_{item.name}"

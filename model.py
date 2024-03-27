@@ -1,5 +1,5 @@
-from typing import List, Optional
-from sqlalchemy import create_engine, ForeignKey, String, Integer
+from typing import List, Optional, NamedTuple
+from sqlalchemy import create_engine, ForeignKey, String, Integer, Boolean
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
@@ -7,6 +7,15 @@ from sqlalchemy.orm import relationship
 
 from sqlalchemy.orm import Session
 from sqlalchemy import select
+
+
+class ItemData(NamedTuple):
+    id: int
+    name: str
+    quantity: int
+    url: str
+    priority: int
+    checked: bool
 
 
 class Base(DeclarativeBase):
@@ -22,7 +31,7 @@ class Item(Base):
     quantity: Mapped[int] = mapped_column(Integer(), default=1)
     url: Mapped[str] = mapped_column(String(100))
     priority: Mapped[int] = mapped_column(Integer(), default=0)
-    checked: Mapped[int] = mapped_column(Integer(), default=0)
+    checked: Mapped[bool] = mapped_column(Boolean(), default=False)
 
     def __repr__(self) -> str:
         return f"Item(id={self.id!r}, name={self.name!r}, url={self.url!r}, priority={self.priority!r}, checked={self.checked!r})"
@@ -30,7 +39,7 @@ class Item(Base):
 
 class DataAccessObject:
 
-    def __init__(self, db_url: str):
+    def __init__(self, db_url: str, base: Base) -> None:
         self.engine = create_engine(url=db_url)
         
     def create_database(self) -> None:
@@ -51,30 +60,33 @@ class DataAccessObject:
         else:
             self.add_quantity(item_name)
 
-    def get_item(self, item_name: str) -> tuple:
+    def get_item(self, item_name: str) -> ItemData:
         with Session(self.engine) as session:
-            return session.query(
+            result = session.query(
                 Item.name,
                 Item.quantity,
                 Item.url,
                 Item.priority,
                 Item.checked
             ).where(Item.name == item_name).one()
+            return ItemData(*result)
 
-    def get_all(self) -> list:
+    def get_all(self) -> list[ItemData]:
         with Session(self.engine) as session:
-            return session.query(
+            result = session.query(
                 Item.name,
                 Item.quantity,
                 Item.url,
                 Item.priority,
                 Item.checked
             ).all()
+            return [ItemData(*item) for item in result]
     
     def exists(self, item_name: str) -> bool:
         with Session(self.engine) as session:
             return session.query(Item.id).filter_by(name=item_name).first() is not None
     
+
     def add_quantity(self, item_name: str) -> None:
         with Session(self.engine) as session:
             session.query(Item).filter(Item.name == item_name).update({'quantity': Item.quantity + 1})
