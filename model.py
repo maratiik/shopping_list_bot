@@ -105,6 +105,16 @@ class DataAccessObject:
             session.query(Item).filter(Item.name == item_name).delete()
             session.commit()
 
+    def remove_checked(self) -> None:
+        with Session(self.engine) as session:
+            session.query(Item).filter(Item.checked == 1).delete()
+            session.commit()
+
+    def remove_all(self) -> None:
+        with Session(self.engine) as session:
+            session.query(Item).delete()
+            session.commit()
+
 
 if __name__ == "__main__":
     url = 'sqlite:///item.db'
