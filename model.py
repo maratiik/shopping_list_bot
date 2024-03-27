@@ -33,6 +33,7 @@ class DataAccessObject:
     def __init__(self, db_url: str):
         self.engine = create_engine(url=db_url)
         
+    def create_database(self) -> None:
         Base.metadata.create_all(self.engine)
 
     def save_item(self, item_name: str, item_url: str = '') -> None:
@@ -57,12 +58,22 @@ class DataAccessObject:
                 Item.quantity,
                 Item.url,
                 Item.priority,
-                Item.checked).where(Item.name == item_name).one()
+                Item.checked
+            ).where(Item.name == item_name).one()
+
+    def get_all(self) -> list:
+        with Session(self.engine) as session:
+            return session.query(
+                Item.name,
+                Item.quantity,
+                Item.url,
+                Item.priority,
+                Item.checked
+            ).all()
     
     def exists(self, item_name: str) -> bool:
         with Session(self.engine) as session:
-            count = session.query(Item.name == item_name).count()
-            return True if count > 0 else False
+            return session.query(Item.id).filter_by(name=item_name).first() is not None
     
     def add_quantity(self, item_name: str) -> None:
         with Session(self.engine) as session:
@@ -98,5 +109,6 @@ class DataAccessObject:
 if __name__ == "__main__":
     url = 'sqlite:///item.db'
     dao = DataAccessObject(url)
-    dao.remove_quantity('potato')
-    print(dao.get_item('potato'))
+    dao.save_item('milk')
+    dao.save_item('potato')
+    print(dao.get_all())
