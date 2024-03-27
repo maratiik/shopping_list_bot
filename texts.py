@@ -5,3 +5,7 @@ menu_keys = {
 
 BACK_CB = 'back'
 BACK_TXT = 'Назад'
+
+MENU = 'Меню'
+
+HTTP = 'http'
