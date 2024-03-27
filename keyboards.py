@@ -1,8 +1,9 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+import asyncio
 from texts import *
 
 
-def menu_keyboard() -> InlineKeyboardMarkup:
+async def menu_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
         [
             InlineKeyboardButton(
@@ -14,7 +15,7 @@ def menu_keyboard() -> InlineKeyboardMarkup:
     ])
 
 
-def keyboard_from_items(items: list) -> InlineKeyboardMarkup:
+async def keyboard_from_items(items: list) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
         [
             InlineKeyboardButton(
@@ -27,7 +28,7 @@ def keyboard_from_items(items: list) -> InlineKeyboardMarkup:
     ]).add(btn_back())
 
 
-def btn_back() -> InlineKeyboardButton:
+async def btn_back() -> InlineKeyboardButton:
     return InlineKeyboardButton(
         text=BACK_TXT,
         callback_data=BACK_CB
@@ -35,13 +36,13 @@ def btn_back() -> InlineKeyboardButton:
 
 
 # item = (name, url, priority, checked)
-def make_item_text(item: tuple) -> str:
+async def make_item_text(item: tuple) -> str:
     return f"{item[0]} {item[2] * '❕'}"
 
 
-def make_item_url(item: tuple) -> str:
+async def make_item_url(item: tuple) -> str:
     return item[1]
 
 
-def make_item_cb(item: tuple) -> str:
+async def make_item_cb(item: tuple) -> str:
     return f"checked_{item[0]}" if item[3] == 1 else f"notchecked_{item[0]}"
