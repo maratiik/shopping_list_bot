@@ -4,6 +4,8 @@ from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
+
+
 from keyboards import *
 from model import DataAccessObject, Base
 import texts
@@ -12,6 +14,7 @@ from config_reader import DB_URL
 
 router = Router()
 dao = DataAccessObject(db_url=DB_URL, base=Base)
+dao.create_tables()
 
 
 class BotState(StatesGroup):

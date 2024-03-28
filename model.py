@@ -1,7 +1,6 @@
-from typing import List, Optional, NamedTuple
-from functools import wraps
+from typing import NamedTuple
 
-from sqlalchemy import create_engine, ForeignKey, String, Integer, Boolean
+from sqlalchemy import create_engine, String, Integer, Boolean
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
@@ -39,7 +38,6 @@ class Item(Base):
 
 
 def active_session(func):
-    @wraps(func)
     def wrapper(self, *args, **kwargs):
         with Session(self.engine) as session:
             return func(self, session, *args, **kwargs)
