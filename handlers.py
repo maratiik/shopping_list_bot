@@ -4,7 +4,7 @@ from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
-
+from sqlalchemy.orm import Session
 
 from keyboards import *
 from model import DataAccessObject, Base
@@ -13,8 +13,6 @@ from config_reader import DB_URL
 
 
 router = Router()
-dao = DataAccessObject(db_url=DB_URL, base=Base)
-dao.create_tables()
 
 
 class BotState(StatesGroup):
@@ -32,7 +30,7 @@ async def cmd_start(message: Message, state: FSMContext):
 
 
 @router.message(BotState.adding, F.text)
-async def add_item(message: Message, state: FSMContext):
+async def add_item(message: Message, state: FSMContext, session: Session):
     # Добавляются айтемы каждого следующего
     # сообщения, пока юзер не нажмет BACK
     items_data = message.text.split(sep=', ')
@@ -45,8 +43,10 @@ async def add_item(message: Message, state: FSMContext):
             item_url = item[item.find(texts.HTTP):]
         else:
             item_name = item
-        
+
+        dao = DataAccessObject(session)
         dao.save_item(item_name, item_url)
+        session.close()
 
 
 @router.callback_query(F.data == texts.ADD_CB)
@@ -59,18 +59,27 @@ async def btn_add(callback: CallbackQuery, state: FSMContext):
 
 
 @router.callback_query(F.data == texts.LIST_CB)
-async def btn_list(callback: CallbackQuery):
+async def btn_list(callback: CallbackQuery, session: Session):
+    dao = DataAccessObject(session)
+    items = dao.get_all()
+    session.close()
+
     await callback.message.edit_text(
         text=texts.LIST_TEXT,
-        reply_markup=keyboard_from_items(dao.get_all())
+        reply_markup=keyboard_from_items(items)
     )
 
 
 @router.callback_query(F.data == texts.REMOVE_CB)
-async def btn_remove(callback: CallbackQuery):
+async def btn_remove(callback: CallbackQuery, session: Session):
+    dao = DataAccessObject(session)
+    items = dao.get_all()
+
+    session.close()
+
     await callback.message.edit_text(
         text=texts.REMOVE_TEXT,
-        reply_markup=removing_keyboard_from_items(items=dao.get_all())
+        reply_markup=removing_keyboard_from_items(items)
     )
 
 
@@ -92,48 +101,79 @@ async def btn_back(callback: CallbackQuery, state: FSMContext):
 
 
 @router.callback_query(F.data.startswith(texts.ITEM_CB))
-async def btn_add_priority(callback: CallbackQuery):
+async def btn_add_priority(callback: CallbackQuery, session: Session):
     item_name = callback.data[len(texts.ITEM_CB):]
+
+    dao = DataAccessObject(session)
     dao.add_priority(item_name)
+
+    items = dao.get_all()
+
+    session.close()
+
     await callback.message.edit_text(
         text=texts.LIST_TEXT,
-        reply_markup=keyboard_from_items(dao.get_all())
+        reply_markup=keyboard_from_items(items)
     )
 
 
 @router.callback_query(F.data.startswith(texts.NOTCHECKED_CB))
-async def btn_check(callback: CallbackQuery):
+async def btn_check(callback: CallbackQuery, session: Session):
     item_name = callback.data[len(texts.NOTCHECKED_CB):]
+
+    dao = DataAccessObject(session)
     dao.check_uncheck(item_name=item_name, set_to=1)
+
+    items = dao.get_all()
+
+    session.close()
+
     await callback.message.edit_text(
         text=texts.REMOVE_TEXT,
-        reply_markup=removing_keyboard_from_items(dao.get_all())
+        reply_markup=removing_keyboard_from_items(items)
     )
 
 
 @router.callback_query(F.data.startswith(texts.CHECKED_CB))
-async def btn_uncheck(callback: CallbackQuery):
+async def btn_uncheck(callback: CallbackQuery, session: Session):
     item_name = callback.data[len(texts.CHECKED_CB):]
+
+    dao = DataAccessObject(session)
     dao.check_uncheck(item_name=item_name, set_to=0)
+
+    items = dao.get_all()
+
+    session.close()
+
     await callback.message.edit_text(
         text=texts.REMOVE_TEXT,
-        reply_markup=removing_keyboard_from_items(dao.get_all())
+        reply_markup=removing_keyboard_from_items(items)
     )
 
 
 @router.callback_query(F.data == texts.REMOVE_CHECKED_CB)
-async def btn_remove_checked(callback: CallbackQuery):
+async def btn_remove_checked(callback: CallbackQuery, session: Session):
+    dao = DataAccessObject(session)
     dao.remove_checked()
+
+    items = dao.get_all()
+
+    session.close()
+
     await callback.message.edit_text(
         text=texts.LIST_TEXT,
-        reply_markup=removing_keyboard_from_items(dao.get_all())
+        reply_markup=removing_keyboard_from_items(items)
     )
 
 
 @router.callback_query(F.data == texts.REMOVE_ALL_CB)
-async def btn_remove_all(callback: CallbackQuery):
+async def btn_remove_all(callback: CallbackQuery, session: Session):
+    dao = DataAccessObject(session)
     dao.remove_all()
+
+    session.close()
+
     await callback.message.edit_text(
-        text=texts.LIST_TEXT,
-        reply_markup=removing_keyboard_from_items(dao.get_all())
+        text=texts.MENU,
+        reply_markup=menu_keyboard()
     )
