@@ -1,5 +1,5 @@
-вынести with Session наружу
-handlers 9 line - import texts as ...
-табчики настроить
-функции с параметром removing разбить
-вынести функцию создания бд (Base и всякое такое)
+вынести with Session наружу +
+handlers 9 line - import texts +
+табчики настроить +
+функции с параметром removing разбить +
+вынести функцию создания бд (Base и всякое такое) +
