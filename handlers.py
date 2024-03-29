@@ -5,14 +5,20 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
 from sqlalchemy.orm import Session
+from sqlalchemy import create_engine
 
 from keyboards import *
-from model import DataAccessObject, Base
 import texts
 from config_reader import DB_URL
+from dao import ItemDAO
+from model import Item, Base
 
 
 router = Router()
+engine = create_engine(DB_URL)
+Base.metadata.create_all(engine)
+
+print('Router started handling everything')
 
 
 class BotState(StatesGroup):
@@ -30,7 +36,7 @@ async def cmd_start(message: Message, state: FSMContext):
 
 
 @router.message(BotState.adding, F.text)
-async def add_item(message: Message, state: FSMContext, session: Session):
+async def add_item(message: Message, state: FSMContext):
     # Добавляются айтемы каждого следующего
     # сообщения, пока юзер не нажмет BACK
     items_data = message.text.split(sep=', ')
@@ -43,10 +49,11 @@ async def add_item(message: Message, state: FSMContext, session: Session):
             item_url = item[item.find(texts.HTTP):]
         else:
             item_name = item
-
-        dao = DataAccessObject(session)
-        dao.save_item(item_name, item_url)
-        session.close()
+        
+        with Session(engine) as session:
+            dao = ItemDAO(session)
+            dao.save(item_name, item_url)
+        
 
 
 @router.callback_query(F.data == texts.ADD_CB)
@@ -59,10 +66,10 @@ async def btn_add(callback: CallbackQuery, state: FSMContext):
 
 
 @router.callback_query(F.data == texts.LIST_CB)
-async def btn_list(callback: CallbackQuery, session: Session):
-    dao = DataAccessObject(session)
-    items = dao.get_all()
-    session.close()
+async def btn_list(callback: CallbackQuery):
+    with Session(engine) as session:
+        dao = ItemDAO(session)
+        items = dao.get_all()
 
     await callback.message.edit_text(
         text=texts.LIST_TEXT,
@@ -71,11 +78,10 @@ async def btn_list(callback: CallbackQuery, session: Session):
 
 
 @router.callback_query(F.data == texts.REMOVE_CB)
-async def btn_remove(callback: CallbackQuery, session: Session):
-    dao = DataAccessObject(session)
-    items = dao.get_all()
-
-    session.close()
+async def btn_remove(callback: CallbackQuery):
+    with Session(engine) as session:
+        dao = ItemDAO(session)
+        items = dao.get_all()
 
     await callback.message.edit_text(
         text=texts.REMOVE_TEXT,
@@ -101,15 +107,14 @@ async def btn_back(callback: CallbackQuery, state: FSMContext):
 
 
 @router.callback_query(F.data.startswith(texts.ITEM_CB))
-async def btn_add_priority(callback: CallbackQuery, session: Session):
+async def btn_add_priority(callback: CallbackQuery):
     item_name = callback.data[len(texts.ITEM_CB):]
+    items = []
 
-    dao = DataAccessObject(session)
-    dao.add_priority(item_name)
-
-    items = dao.get_all()
-
-    session.close()
+    with Session(engine) as session:
+        dao = ItemDAO(session)
+        dao.add_priority(item_name)
+        items = dao.get_all()
 
     await callback.message.edit_text(
         text=texts.LIST_TEXT,
@@ -118,15 +123,15 @@ async def btn_add_priority(callback: CallbackQuery, session: Session):
 
 
 @router.callback_query(F.data.startswith(texts.NOTCHECKED_CB))
-async def btn_check(callback: CallbackQuery, session: Session):
+async def btn_check(callback: CallbackQuery):
     item_name = callback.data[len(texts.NOTCHECKED_CB):]
+    items = []
 
-    dao = DataAccessObject(session)
-    dao.check_uncheck(item_name=item_name, set_to=1)
+    with Session(engine) as session:
+        dao = ItemDAO(session)
+        dao.check_uncheck(item_name=item_name, set_to=True)
+        items = dao.get_all()
 
-    items = dao.get_all()
-
-    session.close()
 
     await callback.message.edit_text(
         text=texts.REMOVE_TEXT,
@@ -135,15 +140,14 @@ async def btn_check(callback: CallbackQuery, session: Session):
 
 
 @router.callback_query(F.data.startswith(texts.CHECKED_CB))
-async def btn_uncheck(callback: CallbackQuery, session: Session):
+async def btn_uncheck(callback: CallbackQuery):
     item_name = callback.data[len(texts.CHECKED_CB):]
+    items = []
 
-    dao = DataAccessObject(session)
-    dao.check_uncheck(item_name=item_name, set_to=0)
-
-    items = dao.get_all()
-
-    session.close()
+    with Session(engine) as session:
+        dao = ItemDAO(session)
+        dao.check_uncheck(item_name=item_name, set_to=False)
+        items = dao.get_all()
 
     await callback.message.edit_text(
         text=texts.REMOVE_TEXT,
@@ -152,13 +156,13 @@ async def btn_uncheck(callback: CallbackQuery, session: Session):
 
 
 @router.callback_query(F.data == texts.REMOVE_CHECKED_CB)
-async def btn_remove_checked(callback: CallbackQuery, session: Session):
-    dao = DataAccessObject(session)
-    dao.remove_checked()
+async def btn_remove_checked(callback: CallbackQuery):
+    items = []
 
-    items = dao.get_all()
-
-    session.close()
+    with Session(engine) as session:
+        dao = ItemDAO(session)
+        dao.delete_checked()
+        items = dao.get_all()
 
     await callback.message.edit_text(
         text=texts.LIST_TEXT,
@@ -167,11 +171,10 @@ async def btn_remove_checked(callback: CallbackQuery, session: Session):
 
 
 @router.callback_query(F.data == texts.REMOVE_ALL_CB)
-async def btn_remove_all(callback: CallbackQuery, session: Session):
-    dao = DataAccessObject(session)
-    dao.remove_all()
-
-    session.close()
+async def btn_remove_all(callback: CallbackQuery):
+    with Session(engine) as session:
+        dao = ItemDAO(session)
+        dao.delete_all()
 
     await callback.message.edit_text(
         text=texts.MENU,
