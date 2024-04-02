@@ -1,16 +1,17 @@
-from aiogram import Router, F
+from aiogram import Router, F, Bot
 from aiogram.filters import Command
 from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery, ReactionTypeEmoji
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.storage.base import StorageKey
+from aiogram.methods import GetChat
 
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 
 from keyboards import *
 import texts
-from config_reader import DB_URL
+from config_reader import DB_URL, TOKEN
 from dao import ItemDAO
 from model import Item, Base
 
@@ -54,9 +55,11 @@ async def add_item(message: Message, state: FSMContext):
             dao = ItemDAO(session)
             dao.save(item_name, item_url)
             
-    # emoji = random.choice(texts.EMOJIS)
-    emoji = random.choice(message.chat.available_reactions())
-    await message.react([ReactionTypeEmoji(emoji=emoji)])
+    bot = Bot(token=TOKEN)
+    chat = await bot.get_chat(chat_id=message.chat.id)
+    emojis = chat.available_reactions
+    response_emoji = random.choice(emojis).emoji if emojis else random.choice(texts.EMOJIS)
+    await message.react([ReactionTypeEmoji(emoji=response_emoji)])
         
 
 @router.callback_query(F.data == texts.ADD_CB)
