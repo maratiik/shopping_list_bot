@@ -3,6 +3,7 @@ from aiogram.filters import Command
 from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery, ReactionTypeEmoji
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
+from aiogram.fsm.storage.base import StorageKey
 
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
@@ -14,7 +15,6 @@ from dao import ItemDAO
 from model import Item, Base
 
 import random
-
 
 router = Router()
 engine = create_engine(DB_URL)
@@ -60,6 +60,7 @@ async def add_item(message: Message, state: FSMContext):
 
 @router.callback_query(F.data == texts.ADD_CB)
 async def btn_add(callback: CallbackQuery, state: FSMContext):
+    
     await state.set_state(BotState.adding)
     await callback.message.edit_text(
         text=texts.ADD_TEXT,

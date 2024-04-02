@@ -4,6 +4,13 @@ from handlers import router
 import asyncio
 from aiogram import Bot, Dispatcher
 
+import logging
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    filename='log.log',
+    format='%(asctime)s %(levelname)s %(message)s'
+)
 
 async def main():
     bot = Bot(token=TOKEN)
@@ -16,4 +23,7 @@ async def main():
 
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except Exception as e:
+        logging.exception(e)
