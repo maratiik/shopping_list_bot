@@ -54,7 +54,8 @@ async def add_item(message: Message, state: FSMContext):
             dao = ItemDAO(session)
             dao.save(item_name, item_url)
             
-    emoji = random.choice(texts.EMOJIS)
+    # emoji = random.choice(texts.EMOJIS)
+    emoji = random.choice(message.chat.available_reactions())
     await message.react([ReactionTypeEmoji(emoji=emoji)])
         
 
