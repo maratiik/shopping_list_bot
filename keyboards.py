@@ -4,6 +4,7 @@ import asyncio
 import texts
 from model import ItemData
 
+
 def menu_keyboard() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     for callback in texts.menu_keys.keys():
@@ -63,7 +64,6 @@ def btn_back() -> InlineKeyboardButton:
     )
 
 
-# item = (name, quantity, url, priority, checked)
 def make_item_text(item: ItemData) -> str:
     if item.quantity > 1:
         return f"{item.name} x{item.quantity} {item.priority * '❕'}"

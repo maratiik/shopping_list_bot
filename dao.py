@@ -6,8 +6,6 @@ from model import Item, ItemData
 import abc
 from typing import NamedTuple
 
-#TODO: make autocommit (read about it) and pass Session obj to DAO methods somehow
-
 
 class AbstractDAO(abc.ABC):
 

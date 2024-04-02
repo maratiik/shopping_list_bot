@@ -1,6 +1,6 @@
 from aiogram import Router, F
 from aiogram.filters import Command
-from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
+from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery, ReactionTypeEmoji
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
@@ -13,12 +13,12 @@ from config_reader import DB_URL
 from dao import ItemDAO
 from model import Item, Base
 
+import random
+
 
 router = Router()
 engine = create_engine(DB_URL)
 Base.metadata.create_all(engine)
-
-print('Router started handling everything')
 
 
 class BotState(StatesGroup):
@@ -53,8 +53,10 @@ async def add_item(message: Message, state: FSMContext):
         with Session(engine) as session:
             dao = ItemDAO(session)
             dao.save(item_name, item_url)
+            
+    emoji = random.choice(texts.EMOJIS)
+    await message.react([ReactionTypeEmoji(emoji=emoji)])
         
-
 
 @router.callback_query(F.data == texts.ADD_CB)
 async def btn_add(callback: CallbackQuery, state: FSMContext):
