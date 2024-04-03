@@ -53,12 +53,17 @@ async def add_item(message: Message, state: FSMContext):
         
         with Session(engine) as session:
             dao = ItemDAO(session)
-            dao.save(item_name, item_url)
+            dao.save(
+                chat_id=message.chat.id,
+                item_name=item_name,
+                item_url=item_url
+            )
             
     bot = Bot(token=TOKEN)
     chat = await bot.get_chat(chat_id=message.chat.id)
     emojis = chat.available_reactions
     response_emoji = random.choice(emojis).emoji if emojis else random.choice(texts.EMOJIS)
+
     await message.react([ReactionTypeEmoji(emoji=response_emoji)])
         
 
@@ -76,7 +81,7 @@ async def btn_add(callback: CallbackQuery, state: FSMContext):
 async def btn_list(callback: CallbackQuery):
     with Session(engine) as session:
         dao = ItemDAO(session)
-        items = dao.get_all()
+        items = dao.get_all(callback.message.chat.id)
 
     await callback.message.edit_text(
         text=texts.LIST_TEXT,
@@ -88,7 +93,7 @@ async def btn_list(callback: CallbackQuery):
 async def btn_remove(callback: CallbackQuery):
     with Session(engine) as session:
         dao = ItemDAO(session)
-        items = dao.get_all()
+        items = dao.get_all(callback.message.chat.id)
 
     await callback.message.edit_text(
         text=texts.REMOVE_TEXT,
@@ -120,8 +125,8 @@ async def btn_add_priority(callback: CallbackQuery):
 
     with Session(engine) as session:
         dao = ItemDAO(session)
-        dao.add_priority(item_name)
-        items = dao.get_all()
+        dao.add_priority(item_name, callback.message.chat.id)
+        items = dao.get_all(callback.message.chat.id)
 
     await callback.message.edit_text(
         text=texts.LIST_TEXT,
@@ -136,8 +141,12 @@ async def btn_check(callback: CallbackQuery):
 
     with Session(engine) as session:
         dao = ItemDAO(session)
-        dao.check_uncheck(item_name=item_name, set_to=True)
-        items = dao.get_all()
+        dao.check_uncheck(
+            item_name=item_name,
+            chat_id=callback.message.chat.id,
+            set_to=True
+        )
+        items = dao.get_all(callback.message.chat.id)
 
 
     await callback.message.edit_text(
@@ -153,8 +162,11 @@ async def btn_uncheck(callback: CallbackQuery):
 
     with Session(engine) as session:
         dao = ItemDAO(session)
-        dao.check_uncheck(item_name=item_name, set_to=False)
-        items = dao.get_all()
+        dao.check_uncheck(
+            item_name=item_name,
+            chat_id=callback.message.chat.id,
+            set_to=False)
+        items = dao.get_all(callback.message.chat.id)
 
     await callback.message.edit_text(
         text=texts.REMOVE_TEXT,
@@ -168,8 +180,8 @@ async def btn_remove_checked(callback: CallbackQuery):
 
     with Session(engine) as session:
         dao = ItemDAO(session)
-        dao.delete_checked()
-        items = dao.get_all()
+        dao.delete_checked(callback.message.chat.id)
+        items = dao.get_all(callback.message.chat.id)
 
     await callback.message.edit_text(
         text=texts.LIST_TEXT,
@@ -181,7 +193,7 @@ async def btn_remove_checked(callback: CallbackQuery):
 async def btn_remove_all(callback: CallbackQuery):
     with Session(engine) as session:
         dao = ItemDAO(session)
-        dao.delete_all()
+        dao.delete_all(callback.message.chat.id)
 
     await callback.message.edit_text(
         text=texts.MENU,
