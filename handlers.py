@@ -62,10 +62,13 @@ async def add_item(message: Message, state: FSMContext):
     bot = Bot(token=TOKEN)
     chat = await bot.get_chat(chat_id=message.chat.id)
     emojis = chat.available_reactions
-    response_emoji = random.choice(emojis).emoji if emojis else random.choice(texts.EMOJIS)
 
-    await message.react([ReactionTypeEmoji(emoji=response_emoji)])
-        
+    if emojis != None:
+        if len(emojis):
+            response_emoji = random.choice(emojis)
+            await message.react([ReactionTypeEmoji(emoji=response_emoji)])
+    else:
+        await message.react([ReactionTypeEmoji(emoji=random.choice(texts.EMOJIS))])
 
 @router.callback_query(F.data == texts.ADD_CB)
 async def btn_add(callback: CallbackQuery, state: FSMContext):
@@ -86,6 +89,17 @@ async def btn_list(callback: CallbackQuery):
     await callback.message.edit_text(
         text=texts.LIST_TEXT,
         reply_markup=keyboard_from_items(items)
+    )
+
+
+@router.callback_query(F.data == texts.FAVOURITES_CB)
+async def btn_favourites(callback: CallbackQuery):
+    with Session(engine) as session:
+        dao = ItemDAO(session)
+        items = dao.get_all(callback.message.chat.id)
+    
+    await callback.message.edit_text(
+        text=
     )
 
 
