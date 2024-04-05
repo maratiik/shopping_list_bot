@@ -7,6 +7,9 @@ menu_keys = {
 BACK_CB = 'back'
 BACK_TXT = 'Назад ⬅️'
 
+BACK_TO_LIST_CB = 'back_to_list'
+BACK_TO_LIST_TEXT = ''
+
 ADD_CB = 'add'
 LIST_CB = 'list'
 REMOVE_CB = 'remove'
@@ -14,6 +17,9 @@ HELP_CB = 'help'
 REMOVE_CHECKED_CB = 'remove_checked'
 REMOVE_ALL_CB = 'remove_all'
 
+ADD_PRIRORITY_CB = 'add_priority_'
+STAR_CB = 'star_'
+NOTSTAR_CB = 'notstar_'
 ITEM_CB = 'item_'
 CHECKED_CB = 'checked_'
 NOTCHECKED_CB = 'notchecked_'
@@ -23,9 +29,13 @@ REMOVE_ALL_TEXT = 'Удалить все'
 
 MENU = 'Меню'
 
+GO_WEB = '🌐'
+
 HTTP = 'http'
 
-ADD_TEXT = 'Добавляем-с\n'
+ADD_PRIRORITY_TEXT = '❕'
+STAR_TEXT = '⭐️'
+ADD_TEXT = 'Добавляем-с'
 LIST_TEXT = 'Список покупок'
 REMOVE_TEXT = 'Нажмите на то, что хотите удалить'
 HELP_TEXT = '''

@@ -47,7 +47,8 @@ class ItemDAO(AbstractDAO):
                 quantity=1,
                 url=item_url,
                 priority=0,
-                checked=0
+                checked=False,
+                starred=False,
             )
             self.session.add(item)
             self.session.commit()
@@ -60,7 +61,8 @@ class ItemDAO(AbstractDAO):
             Item.quantity,
             Item.url,
             Item.priority,
-            Item.checked
+            Item.checked,
+            Item.starred,
         ).where(
             (Item.name == item_name) &
             (Item.chat_id == chat_id)
@@ -73,7 +75,8 @@ class ItemDAO(AbstractDAO):
             Item.quantity,
             Item.url,
             Item.priority,
-            Item.checked
+            Item.checked,
+            Item.starred,
         ).where(Item.chat_id == chat_id).order_by(desc(Item.priority)).all()
         return [ItemData(*item) for item in result]
 
@@ -134,4 +137,11 @@ class ItemDAO(AbstractDAO):
             Item.checked == True,
             Item.chat_id == chat_id
         ).delete()
+        self.session.commit()
+
+    def star_unstar(self, item_name: str, chat_id: int, set_to: bool) -> None:
+        self.session.query(Item).filter(
+            Item.name == item_name,
+            Item.chat_id == chat_id
+        ).update({'starred': set_to})
         self.session.commit()

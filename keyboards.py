@@ -3,6 +3,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 import asyncio
 import texts
 from model import ItemData
+import text_makers as tm
 
 
 def menu_keyboard() -> InlineKeyboardMarkup:
@@ -20,9 +21,8 @@ def keyboard_from_items(items: list[ItemData]) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     for item in items:
         builder.add(InlineKeyboardButton(
-            text=make_item_text(item),
-            url=make_item_url(item),
-            callback_data=make_item_cb(item)
+            text=tm.make_item_text_general(item),
+            callback_data=tm.make_item_cb(item)
         ))
     builder.add(btn_back())
     builder.adjust(1)
@@ -34,8 +34,8 @@ def removing_keyboard_from_items(items: list[ItemData]) -> InlineKeyboardMarkup:
     for item in items:
         builder.add(
             InlineKeyboardButton(
-                text=make_item_text_removing(item),
-                callback_data=make_item_cb_removing(item)
+                text=tm.make_item_text_removing(item),
+                callback_data=tm.make_item_cb_removing(item)
             )
         )
     builder.add(InlineKeyboardButton(
@@ -64,25 +64,37 @@ def btn_back() -> InlineKeyboardButton:
     )
 
 
-def make_item_text(item: ItemData) -> str:
-    if item.quantity > 1:
-        return f"{item.name} x{item.quantity} {item.priority * '❕'}"
-    return f"{item.name} {item.priority * '❕'}"
+def item_detail_keyboard(item_name: str, items: list[ItemData]) -> InlineKeyboardBuilder:
+    builder = InlineKeyboardBuilder()
+    for item in items:
+        builder.row(InlineKeyboardButton(
+            text=tm.make_item_text_detail(item),
+            url=tm.make_item_url(item),
+            callback_data=tm.make_item_cb(item)
+        ))
+        if item.name == item_name:
+            builder.row(*btns_item_detail(item))
+
+    builder.row(btn_back())
+    return builder.as_markup()
 
 
-def make_item_text_removing(item: ItemData) -> str:
-    if item.quantity > 1:
-        return f"{item.name} x{item.quantity} {item.checked * '☑️'}"
-    return f"{item.name} {item.checked * '☑️'}"
-
-
-def make_item_url(item: ItemData) -> str:
-    return item.url
-
-
-def make_item_cb_removing(item: ItemData) -> str:
-    return f"checked_{item.name}" if item.checked == True else f"notchecked_{item.name}"
-
-
-def make_item_cb(item: ItemData) -> str:
-    return f"item_{item.name}"
+def btns_item_detail(item: ItemData) -> list[InlineKeyboardButton]:
+    btns = []
+    if tm.make_item_url(item):
+        btns.append(InlineKeyboardButton(
+            text=texts.GO_WEB,
+            url=tm.make_item_url(item),
+            callback_data=tm.make_item_cb(item)
+        ))
+    btns.append(
+        InlineKeyboardButton(
+            text=texts.ADD_PRIRORITY_TEXT,
+            callback_data=texts.ADD_PRIRORITY_CB
+        ),
+        InlineKeyboardButton(
+            text=texts.STAR_TEXT,
+            callback_data=texts.STAR_CB
+        )
+    )
+    return btns

@@ -25,6 +25,7 @@ Base.metadata.create_all(engine)
 class BotState(StatesGroup):
     adding = State()
     main_menu = State()
+    item_detail = State()
 
 
 @router.message(Command('start'))
@@ -92,17 +93,6 @@ async def btn_list(callback: CallbackQuery):
     )
 
 
-@router.callback_query(F.data == texts.FAVOURITES_CB)
-async def btn_favourites(callback: CallbackQuery):
-    with Session(engine) as session:
-        dao = ItemDAO(session)
-        items = dao.get_all(callback.message.chat.id)
-    
-    await callback.message.edit_text(
-        text=
-    )
-
-
 @router.callback_query(F.data == texts.REMOVE_CB)
 async def btn_remove(callback: CallbackQuery):
     with Session(engine) as session:
@@ -129,22 +119,6 @@ async def btn_back(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_text(
         text=texts.MENU,
         reply_markup=menu_keyboard()
-    )
-
-
-@router.callback_query(F.data.startswith(texts.ITEM_CB))
-async def btn_add_priority(callback: CallbackQuery):
-    item_name = callback.data[len(texts.ITEM_CB):]
-    items = []
-
-    with Session(engine) as session:
-        dao = ItemDAO(session)
-        dao.add_priority(item_name, callback.message.chat.id)
-        items = dao.get_all(callback.message.chat.id)
-
-    await callback.message.edit_text(
-        text=texts.LIST_TEXT,
-        reply_markup=keyboard_from_items(items)
     )
 
 
@@ -212,4 +186,92 @@ async def btn_remove_all(callback: CallbackQuery):
     await callback.message.edit_text(
         text=texts.MENU,
         reply_markup=menu_keyboard()
+    )
+
+
+@router.callback_query(BotState.main_menu, F.data.startswith(texts.ITEM_CB))
+async def btn_item_detail(callback: CallbackQuery, state: FSMContext):
+    await state.set_state(BotState.item_detail)
+
+    with Session(engine) as session:
+        dao = ItemDAO(session)
+        items = dao.get_all(callback.message.chat.id)
+    
+    await callback.message.edit_reply_markup(
+        reply_markup=item_detail_keyboard(
+            item_name=callback.data[len(texts.ITEM_CB):],
+            items=items
+        )
+    )
+
+
+@router.callback_query(BotState.item_detail, F.data.startswith(texts.ITEM_CB))
+async def btn_item_back(callback: CallbackQuery, state: FSMContext):
+    await state.set_state(BotState.main_menu)
+
+    with Session(engine) as session:
+        dao = ItemDAO(session)
+        items = dao.get_all(callback.message.chat.id)
+    
+    await callback.message.edit_reply_markup(
+        reply_markup=keyboard_from_items(items)
+    )
+    
+
+@router.callback_query(F.data.startswith(texts.ADD_PRIRORITY_CB))
+async def btn_add_priority(callback: CallbackQuery):
+    item_name = callback.data[len(texts.ADD_PRIRORITY_CB):]
+    with Session(engine) as session:
+        dao = ItemDAO(session)
+        dao.add_priority(
+            item_name=item_name,
+            chat_id=callback.message.chat.id
+        )
+        items = dao.get_all(callback.message.chat.id)
+
+    await callback.message.edit_reply_markup(
+        reply_markup=item_detail_keyboard(
+            item_name=item_name,
+            items=items
+        )
+    )
+
+
+@router.callback_query(F.data.startswith(texts.NOTSTAR_CB))
+async def btn_star(callback: CallbackQuery):
+    item_name = callback.data[len(texts.NOTSTAR_CB):]
+    with Session(engine) as session:
+        dao = ItemDAO(session)
+        dao.star_unstar(
+            item_name=item_name,
+            chat_id=callback.message.chat.id,
+            set_to=True
+        )
+        items = dao.get_all(callback.message.chat.id)
+    
+    await callback.message.edit_reply_markup(
+        reply_markup=item_detail_keyboard(
+            item_name=item_name,
+            items=items
+        )
+    )
+
+
+@router.callback_query(F.data.startswith(texts.STAR_CB))
+async def btn_star(callback: CallbackQuery):
+    item_name = callback.data[len(texts.STAR_CB):]
+    with Session(engine) as session:
+        dao = ItemDAO(session)
+        dao.star_unstar(
+            item_name=item_name,
+            chat_id=callback.message.chat.id,
+            set_to=False
+        )
+        items = dao.get_all(callback.message.chat.id)
+    
+    await callback.message.edit_reply_markup(
+        reply_markup=item_detail_keyboard(
+            item_name=item_name,
+            items=items
+        )
     )
