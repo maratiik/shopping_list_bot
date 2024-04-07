@@ -63,6 +63,8 @@ async def add_item(message: Message, state: FSMContext):
     bot = Bot(token=TOKEN)
     chat = await bot.get_chat(chat_id=message.chat.id)
     emojis = chat.available_reactions
+    # print(f'CHAT REACTIONS (msg.chat): {message.chat.available_reactions}')
+    # print(f'CHAT REACTION (bot.get_chat): {emojis}')
 
     if emojis != None:
         if len(emojis):
@@ -237,41 +239,21 @@ async def btn_add_priority(callback: CallbackQuery):
     )
 
 
-@router.callback_query(F.data.startswith(texts.NOTSTAR_CB))
-async def btn_star(callback: CallbackQuery):
-    item_name = callback.data[len(texts.NOTSTAR_CB):]
-    with Session(engine) as session:
-        dao = ItemDAO(session)
-        dao.star_unstar(
-            item_name=item_name,
-            chat_id=callback.message.chat.id,
-            set_to=True
-        )
-        items = dao.get_all(callback.message.chat.id)
-    
-    await callback.message.edit_reply_markup(
-        reply_markup=item_detail_keyboard(
-            item_name=item_name,
-            items=items
-        )
-    )
-
-
 @router.callback_query(F.data.startswith(texts.STAR_CB))
-async def btn_star(callback: CallbackQuery):
+async def btn_star_unstar(callback: CallbackQuery):
     item_name = callback.data[len(texts.STAR_CB):]
+
     with Session(engine) as session:
         dao = ItemDAO(session)
         dao.star_unstar(
             item_name=item_name,
-            chat_id=callback.message.chat.id,
-            set_to=False
+            chat_id=callback.message.chat.id
         )
         items = dao.get_all(callback.message.chat.id)
-    
+
     await callback.message.edit_reply_markup(
         reply_markup=item_detail_keyboard(
             item_name=item_name,
-            items=items
+            items = items
         )
     )

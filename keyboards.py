@@ -67,34 +67,37 @@ def btn_back() -> InlineKeyboardButton:
 def item_detail_keyboard(item_name: str, items: list[ItemData]) -> InlineKeyboardBuilder:
     builder = InlineKeyboardBuilder()
     for item in items:
-        builder.row(InlineKeyboardButton(
-            text=tm.make_item_text_detail(item),
-            url=tm.make_item_url(item),
-            callback_data=tm.make_item_cb(item)
-        ))
         if item.name == item_name:
+            builder.row(InlineKeyboardButton(
+                text=tm.make_item_text_detail(item),
+                callback_data=tm.make_item_cb(item)
+            ))
             builder.row(*btns_item_detail(item))
-
+        else:
+            builder.row(InlineKeyboardButton(
+                text=tm.make_item_text_general(item),
+                callback_data=tm.make_item_cb(item)
+            ))
+        
     builder.row(btn_back())
     return builder.as_markup()
 
 
 def btns_item_detail(item: ItemData) -> list[InlineKeyboardButton]:
     btns = []
+
     if tm.make_item_url(item):
         btns.append(InlineKeyboardButton(
             text=texts.GO_WEB,
             url=tm.make_item_url(item),
             callback_data=tm.make_item_cb(item)
         ))
-    btns.append(
-        InlineKeyboardButton(
-            text=texts.ADD_PRIRORITY_TEXT,
-            callback_data=texts.ADD_PRIRORITY_CB
-        ),
-        InlineKeyboardButton(
-            text=texts.STAR_TEXT,
-            callback_data=texts.STAR_CB
-        )
-    )
+    btns.append(InlineKeyboardButton(
+        text=texts.ADD_PRIRORITY_TEXT,
+        callback_data=tm.make_item_priority_cb(item)
+    ))
+    btns.append(InlineKeyboardButton(
+        text=texts.STAR_TEXT,
+        callback_data=tm.make_item_star_cb(item)
+    ))
     return btns

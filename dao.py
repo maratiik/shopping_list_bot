@@ -139,9 +139,21 @@ class ItemDAO(AbstractDAO):
         ).delete()
         self.session.commit()
 
-    def star_unstar(self, item_name: str, chat_id: int, set_to: bool) -> None:
-        self.session.query(Item).filter(
+    def star_unstar(self, item_name: str, chat_id: int) -> None:
+        strd = self.session.query(Item.starred).filter(
             Item.name == item_name,
             Item.chat_id == chat_id
-        ).update({'starred': set_to})
+        ).one()[0]
+
+        if strd:
+            self.session.query(Item).filter(
+                Item.name == item_name,
+                Item.chat_id == chat_id
+            ).update({'starred': False})
+        else:
+            self.session.query(Item).filter(
+                Item.name == item_name,
+                Item.chat_id == chat_id
+            ).update({'starred': True})
+
         self.session.commit()
