@@ -6,6 +6,8 @@ from model import Item, ItemData
 import abc
 from typing import NamedTuple
 
+#TODO: пункт 2
+
 
 class AbstractDAO(abc.ABC):
 
@@ -49,6 +51,7 @@ class ItemDAO(AbstractDAO):
                 priority=0,
                 checked=False,
                 starred=False,
+                checked_fav=False,
             )
             self.session.add(item)
             self.session.commit()
@@ -63,6 +66,7 @@ class ItemDAO(AbstractDAO):
             Item.priority,
             Item.checked,
             Item.starred,
+            Item.checked_fav,
         ).where(
             (Item.name == item_name) &
             (Item.chat_id == chat_id)
@@ -77,6 +81,7 @@ class ItemDAO(AbstractDAO):
             Item.priority,
             Item.checked,
             Item.starred,
+            Item.checked_fav,
         ).where(Item.chat_id == chat_id).order_by(desc(Item.priority)).all()
         return [ItemData(*item) for item in result]
 
@@ -137,23 +142,4 @@ class ItemDAO(AbstractDAO):
             Item.checked == True,
             Item.chat_id == chat_id
         ).delete()
-        self.session.commit()
-
-    def star_unstar(self, item_name: str, chat_id: int) -> None:
-        strd = self.session.query(Item.starred).filter(
-            Item.name == item_name,
-            Item.chat_id == chat_id
-        ).one()[0]
-
-        if strd:
-            self.session.query(Item).filter(
-                Item.name == item_name,
-                Item.chat_id == chat_id
-            ).update({'starred': False})
-        else:
-            self.session.query(Item).filter(
-                Item.name == item_name,
-                Item.chat_id == chat_id
-            ).update({'starred': True})
-
         self.session.commit()

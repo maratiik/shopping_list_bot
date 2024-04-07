@@ -2,26 +2,31 @@ menu_keys = {
     'add': 'Добавить товар 📝',
     'list': 'Посмотреть список 🗒',
     'remove': 'Удаление 🗑',
+    'favourites': 'Избранное ✨',
     'help': 'Помощь 🆘'}
 
 BACK_CB = 'back'
 BACK_TXT = 'Назад ⬅️'
 
-BACK_TO_LIST_CB = 'back_to_list'
-BACK_TO_LIST_TEXT = ''
-
 ADD_CB = 'add'
 LIST_CB = 'list'
 REMOVE_CB = 'remove'
+FAVOURITES_CB = 'favourites'
 HELP_CB = 'help'
+
 REMOVE_CHECKED_CB = 'remove_checked'
 REMOVE_ALL_CB = 'remove_all'
+REMOVE_CHECKED_FAV_CB = 'remove_checked_fav'
+REMOVE_ALL_FAV_CB = 'remove_all_fav'
 
 ADD_PRIRORITY_CB = 'priority_'
 STAR_CB = 'star_'
 ITEM_CB = 'item_'
+
 CHECKED_CB = 'checked_'
 NOTCHECKED_CB = 'notchecked_'
+CHECKED_FAV_CB = 'checkedfav_'
+NOTCHECKED_FAV_CB = 'notcheckedfav_'
 
 REMOVE_CHECKED_TEXT = 'Удалить выделенное'
 REMOVE_ALL_TEXT = 'Удалить все'
@@ -36,6 +41,7 @@ ADD_PRIRORITY_TEXT = '❕'
 STAR_TEXT = '⭐️'
 ADD_TEXT = 'Добавляем-с'
 LIST_TEXT = 'Список покупок'
+FAVOURITES_TEXT = 'Избранное'
 REMOVE_TEXT = 'Нажмите на то, что хотите удалить'
 # HELP_TEXT = '''
 # ·Чтобы добавить что-то, напишите сообщение в виде:

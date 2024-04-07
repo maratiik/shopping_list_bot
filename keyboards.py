@@ -51,6 +51,29 @@ def removing_keyboard_from_items(items: list[ItemData]) -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
+def removing_fav_keyboard_from_items(items: list[ItemData]) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    for item in items:
+        builder.add(
+            InlineKeyboardButton(
+                text=tm.make_item_text_removing_fav(item),
+                callback_data=tm.make_item_cb_removing_fav(item)
+            )
+        )
+    builder.add(InlineKeyboardButton(
+        text=texts.REMOVE_ALL_TEXT,
+        callback_data=texts.REMOVE_CHECKED_FAV_CB
+    ))
+    builder.add(InlineKeyboardButton(
+        text=texts.REMOVE_ALL_TEXT,
+        callback_data=texts.REMOVE_ALL_FAV_CB
+    ))
+    builder.add(btn_back())
+    builder.adjust(1)
+
+    return builder.as_markup()
+
+
 def back_keyboard() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.add(btn_back())

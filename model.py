@@ -10,6 +10,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select
 
 
+#TODO: пункт 1
+
 class ItemData(NamedTuple):
 
     name: str
@@ -17,7 +19,6 @@ class ItemData(NamedTuple):
     url: str
     priority: int
     checked: bool
-    starred: bool
 
 
 class Base(DeclarativeBase):
@@ -36,4 +37,3 @@ class Item(Base):
     url: Mapped[str] = mapped_column(String(100))
     priority: Mapped[int] = mapped_column(Integer(), default=0)
     checked: Mapped[bool] = mapped_column(Boolean(), default=False)
-    starred: Mapped[bool] = mapped_column(Boolean(), default=False)
