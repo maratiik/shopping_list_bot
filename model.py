@@ -21,6 +21,21 @@ class ItemData(NamedTuple):
     checked: bool
 
 
+class FavouriteData(NamedTuple):
+
+    name: str
+    url: str
+    checked: bool
+
+
+def fav_to_item(fav_item: FavouriteData) -> ItemData:
+    return ItemData(fav_item.name, 1, fav_item.url, 0, False)
+
+
+def item_to_fav(item: ItemData) -> FavouriteData:
+    return FavouriteData(item.name, item.url, False)
+
+
 class Base(DeclarativeBase):
 
     pass
@@ -36,4 +51,15 @@ class Item(Base):
     quantity: Mapped[int] = mapped_column(Integer(), default=1)
     url: Mapped[str] = mapped_column(String(100))
     priority: Mapped[int] = mapped_column(Integer(), default=0)
+    checked: Mapped[bool] = mapped_column(Boolean(), default=False)
+
+
+class Favourite(Base):
+
+    __tablename__ = 'favourites'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    chat_id: Mapped[int] = mapped_column(Integer())
+    name: Mapped[str] = mapped_column(String(30))
+    url: Mapped[str] = mapped_column(String(100))
     checked: Mapped[bool] = mapped_column(Boolean(), default=False)

@@ -12,8 +12,8 @@ from sqlalchemy import create_engine
 from keyboards import *
 import texts
 from config_reader import DB_URL, TOKEN
-from dao import ItemDAO
-from model import Item, Base
+from dao import ItemDAO, FavouriteDAO
+from model import Item, Base, Favourite
 
 import random
 
@@ -108,11 +108,11 @@ async def btn_remove(callback: CallbackQuery):
     )
 
 
-#TODO: пункт 3
 @router.callback_query(F.data == texts.FAVOURITES_CB)
 async def btn_favourites(callback: CallbackQuery):
     with Session(engine) as session:
-        pass
+        dao = FavouriteDAO(session)
+        items = dao.get_all(callback.message.chat.id)
 
     await callback.message.edit_text(
         text=texts.FAVOURITES_TEXT,
@@ -158,14 +158,19 @@ async def btn_check(callback: CallbackQuery):
     )
 
 
-#TODO: пункт 3
 @router.callback_query(F.data.startswith(texts.NOTCHECKED_FAV_CB))
 async def btn_check_fav(callback: CallbackQuery):
     item_name = callback.data[len(texts.NOTCHECKED_FAV_CB):]
     items = []
 
     with Session(engine) as session:
-        pass
+        dao = FavouriteDAO(session)
+        dao.check_uncheck(
+            item_name=item_name,
+            chat_id=callback.message.chat.id,
+            set_to=True
+        )
+        items = dao.get_all(callback.message.chat.id)
 
     await callback.message.edit_text(
         text=texts.FAVOURITES_TEXT,
@@ -192,14 +197,19 @@ async def btn_uncheck(callback: CallbackQuery):
     )
 
 
-#TODO: пункт 3
 @router.callback_query(F.data.startswith(texts.CHECKED_FAV_CB))
 async def btn_uncheck_fav(callback: CallbackQuery):
     item_name = callback.data[len(texts.CHECKED_FAV_CB):]
     items = []
 
     with Session(engine) as session:
-        pass
+        dao = FavouriteDAO(session)
+        dao.check_uncheck(
+            item_name=item_name,
+            chat_id=callback.message.chat.id,
+            set_to=False
+        )
+        items = dao.get_all(callback.message.chat.id)
 
     await callback.message.edit_text(
         text=texts.FAVOURITES_TEXT,
@@ -222,13 +232,14 @@ async def btn_remove_checked(callback: CallbackQuery):
     )
 
 
-#TODO: пункт 3
 @router.callback_query(F.data == texts.REMOVE_CHECKED_FAV_CB)
 async def btn_remove_checked_fav(callback: CallbackQuery):
     items = []
 
     with Session(engine) as session:
-        pass
+        dao = FavouriteDAO(session)
+        dao.delete_checked(callback.message.chat.id)
+        items = dao.get_all(callback.message.chat.id)
 
     await callback.message.edit_text(
         text=texts.FAVOURITES_TEXT,
@@ -248,11 +259,11 @@ async def btn_remove_all(callback: CallbackQuery):
     )
 
 
-#TODO: пункт 3
 @router.callback_query(F.data == texts.REMOVE_ALL_FAV_CB)
 async def btn_remove_all_fav(callback: CallbackQuery):
     with Session(engine) as session:
-        pass
+        dao = FavouriteDAO(session)
+        dao.delete_all(callback.message.chat.id)
 
     await callback.message.edit_text(
         text=texts.MENU,
@@ -308,13 +319,27 @@ async def btn_add_priority(callback: CallbackQuery):
     )
 
 
-#TODO: пункт 2, 3
+#TODO: пересмотреть работу дао, с двумя таблицами выглядит тухло, если так продолжать
+# продумай, как можно расписать контроллеры эти чертовы
+# плюс надо как-то сделать так, чтобы у избранных товаров в списке покупок ставилась звездочка
+# это проверяется мб с помощью fav_dao.exists(), пока хз
 @router.callback_query(F.data.startswith(texts.STAR_CB))
 async def btn_star_unstar(callback: CallbackQuery):
     item_name = callback.data[len(texts.STAR_CB):]
 
     with Session(engine) as session:
-        pass
+        item_dao = ItemDAO(session)
+        item = item_dao.get_one(
+            item_name=item_name,
+            chat_id=callback.message.chat.id
+        )
+        fav_dao = FavouriteDAO(session)
+        fav_dao.save(
+            chat_id=callback.message.chat.id,
+            item_name=item.name,
+            item_url=item.url
+        )
+
 
     await callback.message.edit_reply_markup(
         reply_markup=item_detail_keyboard(
