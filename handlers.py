@@ -29,112 +29,112 @@ class BotState(StatesGroup):
     favourites = State()
 
 
-@router.message(Command('start'))
-async def cmd_start(message: Message, state: FSMContext):
-    await state.set_state(BotState.main_menu)
-    await message.answer(
-        text=texts.MENU,
-        reply_markup=menu_keyboard()
-    )
+# @router.message(Command('start'))
+# async def cmd_start(message: Message, state: FSMContext):
+#     await state.set_state(BotState.main_menu)
+#     await message.answer(
+#         text=texts.MENU,
+#         reply_markup=menu_keyboard()
+#     )
 
 
-@router.message(BotState.adding, F.text)
-async def add_item(message: Message, state: FSMContext):
-    # Добавляются айтемы каждого следующего
-    # сообщения, пока юзер не нажмет BACK
-    items_data = message.text.split(sep=', ')
-    for item in items_data:
-        item_name = ''
-        item_url = ''
+# @router.message(BotState.adding, F.text)
+# async def add_item(message: Message, state: FSMContext):
+#     # Добавляются айтемы каждого следующего
+#     # сообщения, пока юзер не нажмет BACK
+#     items_data = message.text.split(sep=', ')
+#     for item in items_data:
+#         item_name = ''
+#         item_url = ''
 
-        if texts.HTTP in item:
-            item_name = item[:item.find(texts.HTTP)]
-            item_url = item[item.find(texts.HTTP):]
-        else:
-            item_name = item
+#         if texts.HTTP in item:
+#             item_name = item[:item.find(texts.HTTP)]
+#             item_url = item[item.find(texts.HTTP):]
+#         else:
+#             item_name = item
         
-        with Session(engine) as session:
-            dao = ItemDAO(session)
-            dao.save(
-                chat_id=message.chat.id,
-                item_name=item_name,
-                item_url=item_url
-            )
+#         with Session(engine) as session:
+#             dao = ItemDAO(session)
+#             dao.save(
+#                 chat_id=message.chat.id,
+#                 item_name=item_name,
+#                 item_url=item_url
+#             )
             
-    bot = Bot(token=TOKEN)
-    chat = await bot.get_chat(chat_id=message.chat.id)
-    emojis = chat.available_reactions
-    # print(f'CHAT REACTIONS (msg.chat): {message.chat.available_reactions}')
-    # print(f'CHAT REACTION (bot.get_chat): {emojis}')
+#     bot = Bot(token=TOKEN)
+#     chat = await bot.get_chat(chat_id=message.chat.id)
+#     emojis = chat.available_reactions
+#     # print(f'CHAT REACTIONS (msg.chat): {message.chat.available_reactions}')
+#     # print(f'CHAT REACTION (bot.get_chat): {emojis}')
 
-    if emojis != None:
-        if len(emojis):
-            response_emoji = random.choice(emojis)
-            await message.react([ReactionTypeEmoji(emoji=response_emoji)])
-    else:
-        await message.react([ReactionTypeEmoji(emoji=random.choice(texts.EMOJIS))])
+#     if emojis != None:
+#         if len(emojis):
+#             response_emoji = random.choice(emojis)
+#             await message.react([ReactionTypeEmoji(emoji=response_emoji)])
+#     else:
+#         await message.react([ReactionTypeEmoji(emoji=random.choice(texts.EMOJIS))])
 
-@router.callback_query(F.data == texts.ADD_CB)
-async def btn_add(callback: CallbackQuery, state: FSMContext):
-    await state.set_state(BotState.adding)
+# @router.callback_query(F.data == texts.ADD_CB)
+# async def btn_add(callback: CallbackQuery, state: FSMContext):
+#     await state.set_state(BotState.adding)
 
-    await callback.message.edit_text(
-        text=texts.ADD_TEXT,
-        reply_markup=back_keyboard()
-    )
-
-
-@router.callback_query(F.data == texts.LIST_CB)
-async def btn_list(callback: CallbackQuery):
-    with Session(engine) as session:
-        dao = ItemDAO(session)
-        items = dao.get_all(callback.message.chat.id)
-
-    await callback.message.edit_text(
-        text=texts.LIST_TEXT,
-        reply_markup=keyboard_from_items(items)
-    )
+#     await callback.message.edit_text(
+#         text=texts.ADD_TEXT,
+#         reply_markup=back_keyboard()
+#     )
 
 
-@router.callback_query(F.data == texts.REMOVE_CB)
-async def btn_remove(callback: CallbackQuery):
-    with Session(engine) as session:
-        dao = ItemDAO(session)
-        items = dao.get_all(callback.message.chat.id)
+# @router.callback_query(F.data == texts.LIST_CB)
+# async def btn_list(callback: CallbackQuery):
+#     with Session(engine) as session:
+#         dao = ItemDAO(session)
+#         items = dao.get_all(callback.message.chat.id)
 
-    await callback.message.edit_text(
-        text=texts.REMOVE_TEXT,
-        reply_markup=removing_keyboard_from_items(items)
-    )
-
-
-@router.callback_query(F.data == texts.FAVOURITES_CB)
-async def btn_favourites(callback: CallbackQuery):
-    with Session(engine) as session:
-        dao = FavouriteDAO(session)
-        items = dao.get_all(callback.message.chat.id)
-
-    await callback.message.edit_text(
-        text=texts.FAVOURITES_TEXT,
-        callback_data=removing_fav_keyboard_from_items(items)
-    )
+#     await callback.message.edit_text(
+#         text=texts.LIST_TEXT,
+#         reply_markup=keyboard_from_items(items)
+#     )
 
 
-@router.callback_query(F.data == texts.HELP_CB)
-async def btn_help(callback: CallbackQuery):
-    await callback.message.edit_text(
-        text=texts.HELP_TEXT,
-        reply_markup=back_keyboard()
-    )
+# @router.callback_query(F.data == texts.REMOVE_CB)
+# async def btn_remove(callback: CallbackQuery):
+#     with Session(engine) as session:
+#         dao = ItemDAO(session)
+#         items = dao.get_all(callback.message.chat.id)
+
+#     await callback.message.edit_text(
+#         text=texts.REMOVE_TEXT,
+#         reply_markup=removing_keyboard_from_items(items)
+#     )
 
 
-@router.callback_query(F.data == texts.BACK_CB)
-async def btn_back(callback: CallbackQuery, state: FSMContext):
-    await state.set_state(BotState.main_menu)
-    await callback.message.edit_text(
-        text=texts.MENU,
-        reply_markup=menu_keyboard()
-    )
+# @router.callback_query(F.data == texts.FAVOURITES_CB)
+# async def btn_favourites(callback: CallbackQuery):
+#     with Session(engine) as session:
+#         dao = FavouriteDAO(session)
+#         items = dao.get_all(callback.message.chat.id)
+
+#     await callback.message.edit_text(
+#         text=texts.FAVOURITES_TEXT,
+#         callback_data=removing_fav_keyboard_from_items(items)
+#     )
+
+
+# @router.callback_query(F.data == texts.HELP_CB)
+# async def btn_help(callback: CallbackQuery):
+#     await callback.message.edit_text(
+#         text=texts.HELP_TEXT,
+#         reply_markup=back_keyboard()
+#     )
+
+
+# @router.callback_query(F.data == texts.BACK_CB)
+# async def btn_back(callback: CallbackQuery, state: FSMContext):
+#     await state.set_state(BotState.main_menu)
+#     await callback.message.edit_text(
+#         text=texts.MENU,
+#         reply_markup=menu_keyboard()
+#     )
 
 
 @router.callback_query(F.data.startswith(texts.NOTCHECKED_CB))
@@ -271,79 +271,79 @@ async def btn_remove_all_fav(callback: CallbackQuery):
     )
 
 
-@router.callback_query(BotState.main_menu, F.data.startswith(texts.ITEM_CB))
-async def btn_item_detail(callback: CallbackQuery, state: FSMContext):
-    await state.set_state(BotState.item_detail)
+# @router.callback_query(BotState.main_menu, F.data.startswith(texts.ITEM_CB))
+# async def btn_item_detail(callback: CallbackQuery, state: FSMContext):
+#     await state.set_state(BotState.item_detail)
 
-    with Session(engine) as session:
-        dao = ItemDAO(session)
-        items = dao.get_all(callback.message.chat.id)
+#     with Session(engine) as session:
+#         dao = ItemDAO(session)
+#         items = dao.get_all(callback.message.chat.id)
     
-    await callback.message.edit_reply_markup(
-        reply_markup=item_detail_keyboard(
-            item_name=callback.data[len(texts.ITEM_CB):],
-            items=items
-        )
-    )
+#     await callback.message.edit_reply_markup(
+#         reply_markup=item_detail_keyboard(
+#             item_name=callback.data[len(texts.ITEM_CB):],
+#             items=items
+#         )
+#     )
 
 
-@router.callback_query(BotState.item_detail, F.data.startswith(texts.ITEM_CB))
-async def btn_item_back(callback: CallbackQuery, state: FSMContext):
-    await state.set_state(BotState.main_menu)
+# @router.callback_query(BotState.item_detail, F.data.startswith(texts.ITEM_CB))
+# async def btn_item_back(callback: CallbackQuery, state: FSMContext):
+#     await state.set_state(BotState.main_menu)
 
-    with Session(engine) as session:
-        dao = ItemDAO(session)
-        items = dao.get_all(callback.message.chat.id)
+#     with Session(engine) as session:
+#         dao = ItemDAO(session)
+#         items = dao.get_all(callback.message.chat.id)
     
-    await callback.message.edit_reply_markup(
-        reply_markup=keyboard_from_items(items)
-    )
+#     await callback.message.edit_reply_markup(
+#         reply_markup=keyboard_from_items(items)
+#     )
     
 
-@router.callback_query(F.data.startswith(texts.ADD_PRIRORITY_CB))
-async def btn_add_priority(callback: CallbackQuery):
-    item_name = callback.data[len(texts.ADD_PRIRORITY_CB):]
-    with Session(engine) as session:
-        dao = ItemDAO(session)
-        dao.add_priority(
-            item_name=item_name,
-            chat_id=callback.message.chat.id
-        )
-        items = dao.get_all(callback.message.chat.id)
+# @router.callback_query(F.data.startswith(texts.ADD_PRIRORITY_CB))
+# async def btn_add_priority(callback: CallbackQuery):
+#     item_name = callback.data[len(texts.ADD_PRIRORITY_CB):]
+#     with Session(engine) as session:
+#         dao = ItemDAO(session)
+#         dao.add_priority(
+#             item_name=item_name,
+#             chat_id=callback.message.chat.id
+#         )
+#         items = dao.get_all(callback.message.chat.id)
 
-    await callback.message.edit_reply_markup(
-        reply_markup=item_detail_keyboard(
-            item_name=item_name,
-            items=items
-        )
-    )
+#     await callback.message.edit_reply_markup(
+#         reply_markup=item_detail_keyboard(
+#             item_name=item_name,
+#             items=items
+#         )
+#     )
 
 
 #TODO: пересмотреть работу дао, с двумя таблицами выглядит тухло, если так продолжать
 # продумай, как можно расписать контроллеры эти чертовы
 # плюс надо как-то сделать так, чтобы у избранных товаров в списке покупок ставилась звездочка
 # это проверяется мб с помощью fav_dao.exists(), пока хз
-@router.callback_query(F.data.startswith(texts.STAR_CB))
-async def btn_star_unstar(callback: CallbackQuery):
-    item_name = callback.data[len(texts.STAR_CB):]
+# @router.callback_query(F.data.startswith(texts.STAR_CB))
+# async def btn_star_unstar(callback: CallbackQuery):
+#     item_name = callback.data[len(texts.STAR_CB):]
 
-    with Session(engine) as session:
-        item_dao = ItemDAO(session)
-        item = item_dao.get_one(
-            item_name=item_name,
-            chat_id=callback.message.chat.id
-        )
-        fav_dao = FavouriteDAO(session)
-        fav_dao.save(
-            chat_id=callback.message.chat.id,
-            item_name=item.name,
-            item_url=item.url
-        )
+#     with Session(engine) as session:
+#         item_dao = ItemDAO(session)
+#         item = item_dao.get_one(
+#             item_name=item_name,
+#             chat_id=callback.message.chat.id
+#         )
+#         fav_dao = FavouriteDAO(session)
+#         fav_dao.save(
+#             chat_id=callback.message.chat.id,
+#             item_name=item.name,
+#             item_url=item.url
+#         )
 
 
-    await callback.message.edit_reply_markup(
-        reply_markup=item_detail_keyboard(
-            item_name=item_name,
-            items = items
-        )
-    )
+#     await callback.message.edit_reply_markup(
+#         reply_markup=item_detail_keyboard(
+#             item_name=item_name,
+#             items = items
+#         )
+#     )
