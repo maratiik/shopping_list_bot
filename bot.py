@@ -6,7 +6,6 @@ from handlers.adding import adding_router
 from handlers.list import list_router
 from handlers.deleting import delete_router
 from handlers.favourites import fav_router
-#TODO: import others
 
 import asyncio
 import logging

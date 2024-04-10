@@ -1,5 +1,5 @@
 from database.item_data import ItemData
-import texts
+import texts.texts
 
 # texts
 def get_item_text_general(item: ItemData) -> str:

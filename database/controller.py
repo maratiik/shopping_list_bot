@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 
-from model import Item, Favourite
-from item_data import ItemData
+from database.model import Item, Favourite
+from database.item_data import ItemData
 
 
 class ItemDAO:
