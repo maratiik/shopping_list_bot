@@ -5,10 +5,10 @@ from aiogram.types import Message
 
 from sqlalchemy import create_engine
 
-from ..database.model import Base
-from ..util.states import BotState
-from ..texts.texts import MENU_TEXT
-from ..keyboards.keyboards import menu_keyboard
+from database.model import Base
+from util.states import BotState
+from texts.texts import MENU_TEXT
+from keyboards.keyboards import menu_keyboard
 
 
 start_router = Router()

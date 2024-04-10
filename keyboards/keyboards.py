@@ -1,12 +1,12 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from ..texts import texts
-from ..texts import text_makers as tm
+from texts import texts
+from texts import text_makers as tm
 
 import buttons as btns
 
-from ..database.item_data import ItemData
+from database.item_data import ItemData
 
 
 def menu_keyboard() -> InlineKeyboardMarkup:

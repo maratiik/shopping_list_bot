@@ -1,7 +1,7 @@
 from aiogram.types import InlineKeyboardButton
-from ..texts import texts
-from ..texts import text_makers as tm
-from ..database.item_data import ItemData
+from texts import texts
+from texts import text_makers as tm
+from database.item_data import ItemData
 
 
 def btn_back() -> InlineKeyboardButton:
