@@ -20,7 +20,7 @@ def get_item_url(item: ItemData) -> str:
 
 # callbacks
 def get_item_cb(item: ItemData) -> str:
-    return f"{texts.ITEM_CB}{item.name} {item.url}"
+    return f"{texts.ITEM_CB}{item.name}{item.url}"
 
 
 def get_item_add_to_fav_cb(item: ItemData) -> str:
@@ -31,15 +31,16 @@ def get_item_add_priority_cb(item: ItemData) -> str:
     return f"{texts.ADD_PRIRORITY_CB}{item.name}"
 
 
-def split_url(item_data: str) -> tuple:
+def split_url(item_data: str) -> tuple[str, str]:
     name = ''
     url = ''
     if texts.HTTP in item_data:
         name = item_data[item_data.find(texts.HTTP):]
         url = item_data[:item_data.find(texts.HTTP)]
-    
+    else:
+        name = item_data
     return name, url
 
 
 if __name__ == '__main__':
-    print(split_url('asdhttp:asf'))
+    print(split_url('a'))

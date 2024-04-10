@@ -28,6 +28,7 @@ delete_router = Router()
 
 @delete_router.callback_query(F.data.startswith(texts.ITEM_CB), BotState._deleting)
 async def btn_toggle_check(callback: CallbackQuery, engine: Engine):
+    #TODO: исправить
     item_name, item_url = split_url(callback.data[len(texts.ITEM_CB):])
 
     logging.debug(f"@delete_router.btn_toggle_check: {item_name}, {item_url}")

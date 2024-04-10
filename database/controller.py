@@ -98,18 +98,19 @@ class ItemDAO:
         logging.debug(f"ALL DELETED from Item table - delete_all()")
 
     def toggle_check(self, chat_id: int, item: ItemData) -> None:
-        self.session.query(Item).filter(
-            Item.name == item.name,
-            Item.chat_id == chat_id
-        ).update({'checked': not Item.checked})
-        self.session.commit()
-
         chckd = self.session.query(Item.checked).filter(
             Item.name == item.name,
             Item.chat_id == chat_id
-        ).one()
+        ).one()[0]
 
-        logging.debug(f"{item} CHECK TOGGLE to {chckd} in Item table - toggle_check()")
+        logging.debug(f"{item} CHECK TOGGLE from {chckd} in Item table - toggle_check()")
+
+        self.session.query(Item).filter(
+            Item.name == item.name,
+            Item.chat_id == chat_id
+        ).update({'checked': not chckd})
+        self.session.commit()
+        
 
     def add_priority(self, chat_id: int, item: ItemData) -> None:
         self.session.query(Item).filter(
@@ -195,21 +196,22 @@ class FavouriteDAO:
         ).delete()
         self.session.commit()
 
-        logging.debug(f"ALL DELETED from Item table - delete_all()")
+        logging.debug(f"ALL DELETED from Favourite table - delete_all()")
 
     def toggle_check(self, chat_id: int, item: ItemData) -> None:
-        self.session.query(Favourite).filter(
-            Favourite.name == item.name,
-            Favourite.chat_id == chat_id
-        ).update({'checked': not Favourite.checked})
-        self.session.commit()
-
         chckd = self.session.query(Favourite.checked).filter(
             Favourite.name == item.name,
             Favourite.chat_id == chat_id
-        ).one()
+        ).one()[0]
 
-        logging.debug(f"{item} CHECK TOGGLE to {chckd} in Favourite table - toggle_check()")
+        logging.debug(f"{item} CHECK TOGGLE from {chckd} in Favourite table - toggle_check()")
+
+        self.session.query(Favourite).filter(
+            Favourite.name == item.name,
+            Favourite.chat_id == chat_id
+        ).update({'checked': not chckd})
+        self.session.commit()
+        
 
     def add_priority(self, chat_id: int, item: ItemData) -> None:
         self.session.query(Favourite).filter(
