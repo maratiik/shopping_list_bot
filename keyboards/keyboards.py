@@ -12,28 +12,32 @@ from database.item_data import ItemData
 def menu_keyboard() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
 
-    builder.add([
+    builder.add(
         InlineKeyboardButton(
             text=texts.ADD_TEXT,
             callback_data=texts.ADD_CB
-        ),
-        InlineKeyboardButton(
+        )
+    )
+    builder.add(InlineKeyboardButton(
             text=texts.LIST_TEXT,
             callback_data=texts.LIST_CB
-        ),
-        InlineKeyboardButton(
+        )
+    )
+    builder.add(InlineKeyboardButton(
             text=texts.FAVOURITES_TEXT,
             callback_data=texts.FAVOURITES_CB
-        ),
-        InlineKeyboardButton(
+        )
+    )
+    builder.add(InlineKeyboardButton(
             text=texts.DELETE_TEXT,
             callback_data=texts.DELETE_CB
-        ),
-        InlineKeyboardButton(
+        )
+    )
+    builder.add(InlineKeyboardButton(
             text=texts.HELP_TEXT,
             callback_data=texts.HELP_CB
         )
-    ])
+    )
 
     builder.adjust(1)
     
@@ -64,8 +68,10 @@ def delete_keyboard(items: list[ItemData]) -> InlineKeyboardMarkup:
             text=tm.get_item_text_deleting(item),
             callback_data=tm.get_item_cb(item)
         ))
+    
+    for btn in btns.btns_delete():
+        builder.add(btn)
 
-    builder.add(btns.btns_delete())
     builder.add(btns.btn_back())
 
     builder.adjust(1)

@@ -14,6 +14,15 @@ from database.item_data import ItemData
 
 from random import choice
 
+import logging
+
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    filename='log.log',
+    format='%(asctime)s %(levelname)s %(message)s'
+)
+
 
 adding_router = Router()
 
@@ -21,6 +30,8 @@ adding_router = Router()
 @adding_router.message(BotState._adding, F.text)
 async def add_item(message: Message, state: FSMContext, bot: Bot, engine: Engine):
     items_data = message.text.split(sep=', ')
+
+    logging.debug(f"@adding_router.add_item: {items_data}")
 
     for item in items_data:
         item_name = ''
@@ -56,6 +67,8 @@ async def add_item(message: Message, state: FSMContext, bot: Bot, engine: Engine
 @adding_router.callback_query(BotState._adding, F.data.startswith(texts.ITEM_CB))
 async def btn_add_from_fav(callback: CallbackQuery, engine: Engine):
     item_data = callback.data[len(texts.ITEM_CB)]
+
+    logging.debug(f"@adding_router.btn_add_from_fav: {item_data}")
 
     item_name = ''
     item_url = ''

@@ -10,9 +10,7 @@ class ItemData(NamedTuple):
     is_fav: bool = False
 
 if __name__ == '__main__':
-    a = ItemData(
-        name='asdasd',
-        url='qqq',
-        is_fav=True
-    )
+    a = ItemData(name='abc', url='def', priority=2, checked=False)
     print(a)
+    b = ItemData(a.name, a.url, a.priority, a.checked, True)
+    print(b)

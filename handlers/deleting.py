@@ -7,11 +7,20 @@ from sqlalchemy.orm import Session
 from sqlalchemy import Engine
 
 from texts import texts
-from text.text_makers import split_url
+from texts.text_makers import split_url
 import keyboards.keyboards as keys
 from util.states import BotState
 from database.controller import ItemDAO, FavouriteDAO
 from database.item_data import ItemData
+
+import logging
+
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    filename='log.log',
+    format='%(asctime)s %(levelname)s %(message)s'
+)
 
 
 delete_router = Router()
@@ -20,6 +29,8 @@ delete_router = Router()
 @delete_router.callback_query(F.data.startswith(texts.ITEM_CB), BotState._deleting)
 async def btn_toggle_check(callback: CallbackQuery, engine: Engine):
     item_name, item_url = split_url(callback.data[len(texts.ITEM_CB):])
+
+    logging.debug(f"@delete_router.btn_toggle_check: {item_name}, {item_url}")
 
     items = []
 
@@ -34,7 +45,8 @@ async def btn_toggle_check(callback: CallbackQuery, engine: Engine):
         )
         items = dao.get_all(callback.message.chat.id)
 
-    await callback.message.edit_reply_markup(
+    await callback.message.edit_text(
+        text=texts.DELETE_MENU_TEXT,
         reply_markup=keys.delete_keyboard(items)
     )
 
@@ -42,6 +54,8 @@ async def btn_toggle_check(callback: CallbackQuery, engine: Engine):
 @delete_router.callback_query(F.data == texts.DELETE_CHECKED_CB, BotState._deleting)
 async def btn_delete_checked(callback: CallbackQuery, engine: Engine):
     items = []
+
+    logging.debug(f"@delete_router.btn_delete_checked")
 
     with Session(engine) as session:
         dao = ItemDAO(session)
@@ -55,11 +69,27 @@ async def btn_delete_checked(callback: CallbackQuery, engine: Engine):
 
 @delete_router.callback_query(F.data == texts.DELETE_ALL_CB, BotState._deleting)
 async def btn_delete_all(callback: CallbackQuery, state: FSMContext, engine: Engine):
+
+    logging.debug(f"@delete_router.btn_delete_all")
+
     await state.set_state(BotState._main_menu)
 
     with Session(engine) as session:
         dao = ItemDAO(session)
         dao.delete_all(callback.message.chat.id)
+
+    await callback.message.edit_text(
+        text=texts.MENU_TEXT,
+        reply_markup=keys.menu_keyboard()
+    )
+
+
+@delete_router.callback_query(F.data == texts.BACK_CB, BotState._deleting)
+async def btn_back_delete(callback: CallbackQuery, state: FSMContext):
+
+    logging.debug(f"@delete_router.btn_back_delete")
+
+    await state.set_state(BotState._main_menu)
 
     await callback.message.edit_text(
         text=texts.MENU_TEXT,
