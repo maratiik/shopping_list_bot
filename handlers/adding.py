@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import Engine
 
 from texts import texts
+import texts.text_makers as tm
 import keyboards.keyboards as keys
 from util.states import BotState
 from database.controller import ItemDAO, FavouriteDAO
@@ -66,23 +67,16 @@ async def add_item(message: Message, state: FSMContext, bot: Bot, engine: Engine
 
 @adding_router.callback_query(BotState._adding, F.data.startswith(texts.ITEM_CB))
 async def btn_add_from_fav(callback: CallbackQuery, engine: Engine):
-    item_data = callback.data[len(texts.ITEM_CB)]
+    item_data = callback.data[len(texts.ITEM_CB):]
 
     logging.debug(f"@adding_router.btn_add_from_fav: {item_data}")
 
-    item_name = ''
-    item_url = ''
-
-    if texts.HTTP in item_data:
-        item_name = item_data[:item_data.find(texts.HTTP)]
-        item_url = item_data[item_data.find(texts.HTTP):]
-    else:
-        item_name = item_data
+    item_name, item_url = tm.split_url(item_data)
 
     with Session(engine) as session:
         dao = ItemDAO(session)
         dao.save(
-            chat_id=message.chat.id,
+            chat_id=callback.message.chat.id,
             item=ItemData(
                 name=item_name,
                 url=item_url

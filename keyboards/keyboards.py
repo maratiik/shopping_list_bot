@@ -93,7 +93,7 @@ def item_detail_keyboard(detailed_item: str, items: list[ItemData]) -> InlineKey
         if item.name == detailed_item:
             builder.row(InlineKeyboardButton(
                 text=tm.get_item_text_detail(item),
-                callback_data=tm.make_item_cb(item)
+                callback_data=tm.get_item_cb(item)
             ))
             builder.row(*btns.btns_item_detail(item))
         else:

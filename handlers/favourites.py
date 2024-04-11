@@ -44,6 +44,8 @@ async def btn_toggle_check_fav(callback: CallbackQuery, engine: Engine):
             )
         )
 
+        items = dao.get_all(callback.message.chat.id)
+
     await callback.message.edit_reply_markup(
         reply_markup=keys.delete_keyboard(items)
     )

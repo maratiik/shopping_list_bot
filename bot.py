@@ -1,3 +1,10 @@
+import asyncio
+import logging
+import os
+import sys
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from util.config_reader import TOKEN, DB_URL
 from database.model import Base
 from handlers.start import start_router
@@ -6,9 +13,6 @@ from handlers.adding import adding_router
 from handlers.list import list_router
 from handlers.deleting import delete_router
 from handlers.favourites import fav_router
-
-import asyncio
-import logging
 
 from aiogram import Bot, Dispatcher
 
@@ -23,6 +27,7 @@ logging.basicConfig(
     format='%(asctime)s %(levelname)s %(message)s'
 )
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 async def main():
     bot = Bot(token=TOKEN)

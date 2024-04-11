@@ -28,9 +28,10 @@ list_router = Router()
 @list_router.callback_query(BotState._list, F.data.startswith(texts.ITEM_CB))
 async def btn_item_detail(callback: CallbackQuery, state: FSMContext, engine: Engine, data: dict):
     await state.set_state(BotState._detail)
-    data['item_name'], data['item_url'] = split_url(callback.data[len(texts.ITEM_CB)])
 
-    logging.debug(f"@list_router.btn_item_detail: {data['item_name']}, {data['item_url']}")
+    logging.debug(f"@list_router.btn_item_detail: {callback.data}")
+
+    data['item_name'], data['item_url'] = split_url(callback.data[len(texts.ITEM_CB):])
 
     items = []
 
@@ -47,7 +48,7 @@ async def btn_item_detail(callback: CallbackQuery, state: FSMContext, engine: En
 
 
 @list_router.callback_query(BotState._detail, F.data.startswith(texts.ITEM_CB))
-async def btn_item_general(callback: CallbackQuery, state: FSMContext, engine: Engine):
+async def btn_item_general(callback: CallbackQuery, state: FSMContext, engine: Engine, data: dict):
 
     logging.debug(f"@list_router.btn_item_general")
 
@@ -104,15 +105,14 @@ async def btn_add_to_fav(callback: CallbackQuery, state: FSMContext, engine: Eng
 
     with Session(engine) as session:
         fav_dao = FavouriteDAO(session)
-        item_exists = fav_dao.exists(
+
+        if fav_dao.exists(
             chat_id=callback.message.chat.id,
             item=ItemData(
                 name=item_name,
                 url=item_url
             )
-        )
-
-        if item_exists:
+        ):
             fav_dao.delete_one(
                 chat_id=callback.message.chat.id,
                 item=ItemData(name=item_name)
@@ -137,6 +137,9 @@ async def btn_add_to_fav(callback: CallbackQuery, state: FSMContext, engine: Eng
                 url=item_url,
                 is_fav=True
             )
+        
+        item_dao = ItemDAO(session)
+        items = item_dao.get_all_with_fav_data(callback.message.chat.id)
 
     await callback.message.edit_reply_markup(
         reply_markup=keys.item_detail_keyboard(

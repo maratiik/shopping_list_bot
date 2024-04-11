@@ -128,7 +128,7 @@ class ItemDAO:
 
     def exists(self, chat_id: int, item: ItemData) -> bool:
         exsts = self.session.query(Item.id).filter(
-            Item.name == item_name,
+            Item.name == item.name,
             Item.chat_id == chat_id
         ).first() is not None
 
