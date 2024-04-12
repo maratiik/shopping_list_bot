@@ -28,7 +28,7 @@ logging.basicConfig(
 adding_router = Router()
 
 
-@adding_router.message(BotState._adding, F.text)
+@adding_router.message(F.text, BotState._adding)
 async def add_item(message: Message, state: FSMContext, bot: Bot, engine: Engine):
     items_data = message.text.split(sep=', ')
 
@@ -65,7 +65,7 @@ async def add_item(message: Message, state: FSMContext, bot: Bot, engine: Engine
         await message.react([ReactionTypeEmoji(emoji=choice(texts.EMOJIS))])
 
 
-@adding_router.callback_query(BotState._adding, F.data.startswith(texts.ITEM_CB))
+@adding_router.callback_query(F.data.startswith(texts.ITEM_CB), BotState._adding)
 async def btn_add_from_fav(callback: CallbackQuery, engine: Engine):
     item_data = callback.data[len(texts.ITEM_CB):]
 
@@ -84,3 +84,16 @@ async def btn_add_from_fav(callback: CallbackQuery, engine: Engine):
         )
     
     await callback.answer(text=f'{item_name} добавлен!')
+
+
+@adding_router.callback_query(F.data == texts.BACK_CB, BotState._adding)
+async def btn_back_from_adding(callback: CallbackQuery, state: FSMContext):
+    logging.debug('@adding_router.btn_back_from_adding')
+    
+    await state.set_state(BotState._main_menu)
+
+    await callback.message.edit_text(
+        text=texts.MENU_TEXT,
+        reply_markup=keys.menu_keyboard()
+    )
+    

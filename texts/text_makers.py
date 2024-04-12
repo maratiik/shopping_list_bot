@@ -12,11 +12,11 @@ logging.basicConfig(
 
 # texts
 def get_item_text_general(item: ItemData) -> str:
-    return f"▾ {item.name} {item.priority * '❕'} {item.is_fav * '⭐️'}"
+    return f"▾ {item.name} {item.priority * '❕'} {item.is_fav * '⭐️'} {item.checked * '☑️'}"
 
 
 def get_item_text_detail(item: ItemData) -> str:
-    return f"▴ {item.name} {item.priority * '❕'} {item.is_fav * '⭐️'}"
+    return f"▴ {item.name} {item.priority * '❕'} {item.is_fav * '⭐️'} {item.checked * '☑️'}"
 
 
 def get_item_text_deleting(item: ItemData) -> str:

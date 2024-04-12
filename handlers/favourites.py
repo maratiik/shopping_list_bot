@@ -52,10 +52,22 @@ async def btn_toggle_check_fav(callback: CallbackQuery, engine: Engine):
 
 
 @fav_router.callback_query(F.data == texts.DELETE_CHECKED_CB, BotState._favourites)
-async def btn_delete_checked_fav(callback: CallbackQuery, engine: Engine):
-    items = []
+async def btn_delete_checked_fav(callback: CallbackQuery, engine: Engine, state: FSMContext):
+    await state.set_state(BotState._confirm_favs_checked)
 
     logging.debug(f"@fav_router.btn_delete_checked_fav")
+
+    await callback.message.edit_text(
+        text=texts.CONFIRM_DELETING_ALL_MENU_TEXT,
+        reply_markup=keys.confirm_deleting_all()
+    )
+
+
+@fav_router.callback_query(F.data == texts.CONFIRM_DELETING_ALL_CB, BotState._confirm_favs_checked)
+async def btn_confirm_delete_checked_fav(callback: CallbackQuery, engine: Engine, state: FSMContext):
+    logging.debug('@fav_router.btn_confirm_delete_checked_fav')
+
+    await state.set_state(BotState._favourites)
 
     with Session(engine) as session:
         dao = FavouriteDAO(session)
@@ -73,8 +85,20 @@ async def btn_delete_all_fav(callback: CallbackQuery, state: FSMContext, engine:
 
     logging.debug(f"@fav_router.btn_delete_all_fav")
 
-    await state.set_state(BotState._main_menu)
+    await state.set_state(BotState._confirm_favs)
 
+    await callback.message.edit_text(
+        text=texts.CONFIRM_DELETING_ALL_MENU_TEXT,
+        reply_markup=keys.confirm_deleting_all()
+    )
+
+
+@fav_router.callback_query(F.data == texts.CONFIRM_DELETING_ALL_CB, BotState._confirm_favs)
+async def btn_confirm_delete_all_fav(callback: CallbackQuery, engine: Engine, state: FSMContext):
+    logging.debug("@fav_router.btn_confirm_delete_all_fav")
+
+    await state.set_state(BotState._main_menu)
+    
     with Session(engine) as session:
         dao = FavouriteDAO(session)
         dao.delete_all(callback.message.chat.id)
@@ -96,3 +120,36 @@ async def btn_back_fav(callback: CallbackQuery, state: FSMContext):
         text=texts.MENU_TEXT,
         reply_markup=keys.menu_keyboard()
     )
+
+
+@fav_router.callback_query(F.data == texts.BACK_CB, BotState._confirm_favs)
+async def btn_cancel_delete_all_fav(callback: CallbackQuery, state: FSMContext, engine: Engine):
+    logging.debug("@fav_router.btn_cancel_delete_all_fav")
+
+    await state.set_state(BotState._favourites)
+
+    with Session(engine) as session:
+        dao = FavouriteDAO(session)
+        items = dao.get_all(callback.message.chat.id)
+
+    await callback.message.edit_text(
+        text=texts.FAVOURITES_MENU_TEXT,
+        reply_markup=keys.delete_keyboard(items)
+    )
+
+
+@fav_router.callback_query(F.data == texts.BACK_CB, BotState._confirm_favs_checked)
+async def btn_cancel_delete_checked_fav(callback: CallbackQuery, state: FSMContext, engine: Engine):
+    logging.debug('@fav_router.btn_cancel_delete_checked_fav')
+
+    await state.set_state(BotState._favourites)
+
+    with Session(engine) as session:
+        dao = FavouriteDAO(session)
+        items = dao.get_all(callback.message.chat.id)
+
+    await callback.message.edit_text(
+        text=texts.FAVOURITES_MENU_TEXT,
+        reply_markup=keys.delete_keyboard(items)
+    )
+    

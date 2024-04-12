@@ -10,3 +10,9 @@ class BotState(StatesGroup):
     _list = State()
     _detail = State()
     _help = State()
+
+    _confirm_list = State()
+    _confirm_favs = State()
+
+    _confirm_list_checked = State()
+    _confirm_favs_checked = State()

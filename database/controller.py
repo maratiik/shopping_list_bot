@@ -35,6 +35,33 @@ class ItemDAO:
         else:
             pass
 
+    def get_one(self, chat_id: int, item_name: str) -> ItemData:
+        result = self.session.query(
+            Item.name,
+            Item.url,
+            Item.priority,
+            Item.checked
+        ).filter(
+            Item.chat_id == chat_id,
+            Item.name == item_name
+        ).one()
+
+        item = ItemData(*result)
+
+        fav_dao = FavouriteDAO(self.session)
+        is_in_fav = fav_dao.exists(
+            chat_id=chat_id,
+            item=item
+        )
+
+        return ItemData(
+            item.name,
+            item.url,
+            item.priority,
+            item.checked,
+            is_in_fav
+        )
+
     def get_all(self, chat_id: int) -> list[ItemData]:
         result = self.session.query(
             Item.name,
@@ -45,7 +72,7 @@ class ItemDAO:
             Item.chat_id == chat_id
         ).order_by(desc(Item.priority)).all()
 
-        logging.debug(f"{result} SELECTED from Item table - get_all()")
+        logging.debug(f"{result} SELECTED from Item table - get_all_sorted()")
 
         return [ItemData(*item) for item in result]
 
@@ -135,6 +162,18 @@ class ItemDAO:
         logging.debug(f"{item} EXISTS={exsts} in Item table - exists()")
 
         return exsts
+
+    def update_data(self, chat_id: int, items: list[ItemData]) -> list[ItemData]:
+        new_list = []
+
+        for item in items:
+            updated_item = self.get_one(
+                chat_id=chat_id,
+                item_name=item.name
+            )
+            new_list.append(updated_item)
+
+        return new_list
 
 
 class FavouriteDAO:

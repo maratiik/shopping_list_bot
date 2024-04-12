@@ -23,14 +23,17 @@ def btns_item_detail(item: ItemData) -> list[InlineKeyboardButton]:
 
     btns.append(InlineKeyboardButton(
         text=texts.ADD_PRIRORITY_TEXT,
-        # callback_data=tm.get_item_add_priority_cb(item)
         callback_data=texts.ADD_PRIRORITY_CB
     ))
 
     btns.append(InlineKeyboardButton(
         text=texts.ADD_TO_FAV_TEXT,
-        # callback_data=tm.get_item_add_to_fav_cb(item)
         callback_data=texts.ADD_TO_FAV_CB
+    ))
+
+    btns.append(InlineKeyboardButton(
+        text=texts.CHECK_TEXT,
+        callback_data=texts.CHECK_CB
     ))
 
     return btns

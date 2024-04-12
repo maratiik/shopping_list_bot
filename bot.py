@@ -11,7 +11,6 @@ from handlers.start import start_router
 from handlers.main_menu import menu_router
 from handlers.adding import adding_router
 from handlers.list import list_router
-from handlers.deleting import delete_router
 from handlers.favourites import fav_router
 
 from aiogram import Bot, Dispatcher
@@ -35,14 +34,13 @@ async def main():
 
     dp['bot'] = bot
     dp['engine'] = engine
-    dp['data'] = {'item_name': '', 'item_url': ''}
+    dp['data'] = {'item_name': '', 'item_url': '', 'items': []}
 
     dp.include_routers(
         start_router,
         menu_router,
         adding_router,
         list_router,
-        delete_router,
         fav_router
     )
 

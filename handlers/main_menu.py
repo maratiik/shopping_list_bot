@@ -42,7 +42,7 @@ async def btn_add(callback: CallbackQuery, state: FSMContext, engine: Engine):
 
 
 @menu_router.callback_query(F.data == texts.LIST_CB, BotState._main_menu)
-async def btn_list(callback: CallbackQuery, state: FSMContext, engine: Engine):
+async def btn_list(callback: CallbackQuery, state: FSMContext, engine: Engine, data: list):
 
     logging.debug(f"@menu_router.btn_list")
 
@@ -53,6 +53,8 @@ async def btn_list(callback: CallbackQuery, state: FSMContext, engine: Engine):
     with Session(engine) as session:
         dao = ItemDAO(session)
         items = dao.get_all_with_fav_data(callback.message.chat.id)
+
+    data['items'] = items
 
     await callback.message.edit_text(
         text=texts.LIST_MENU_TEXT,
@@ -111,10 +113,10 @@ async def btn_help(callback: CallbackQuery, state: FSMContext):
     )
 
 
-@menu_router.callback_query(F.data == texts.BACK_CB)
-async def btn_back(callback: CallbackQuery, state: FSMContext):
+@menu_router.callback_query(F.data == texts.BACK_CB, BotState._help)
+async def btn_back_from_help(callback: CallbackQuery, state: FSMContext, data: dict):
 
-    logging.debug(f"@menu_router.btn_back")
+    logging.debug(f"@menu_router.btn_back_from_help")
     
     await state.set_state(BotState._main_menu)
 

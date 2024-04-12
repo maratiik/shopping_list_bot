@@ -12,9 +12,12 @@ ITEM_CB = '_item:'
 GO_URL_CB = '_url'
 ADD_PRIRORITY_CB = '_add_priority:'
 ADD_TO_FAV_CB = '_add_to_fav:'
+CHECK_CB = '_check:'
 
 DELETE_CHECKED_CB = '_del_checked'
 DELETE_ALL_CB = '_del_all'
+
+CONFIRM_DELETING_ALL_CB = '_confirm'
 
 BACK_CB = '_back'
 
@@ -28,9 +31,12 @@ HELP_TEXT = 'Помощь 🆘'
 GO_URL_TEXT = '🌐'
 ADD_PRIRORITY_TEXT = '❕'
 ADD_TO_FAV_TEXT = '⭐️'
+CHECK_TEXT = '☑️'
 
 DELETE_CHECKED_TEXT = 'Удалить выделенное'
 DELETE_ALL_TEXT = 'Удалить все'
+
+CONFIRM_DELETING_ALL_TEXT = 'Да, удаляй!'
 
 BACK_TEXT = 'Назад ⬅️'
 
@@ -50,6 +56,8 @@ HELP_MENU_TEXT = '''
 - Чтобы поменять приоритет товара или добавить его в избранное,\
 нажмите на товар в списке покупок
 '''
+
+CONFIRM_DELETING_ALL_MENU_TEXT = 'Точно удаляю?'
 
 ### util
 HTTP = 'http'
