@@ -34,7 +34,7 @@ async def main():
 
     dp['bot'] = bot
     dp['engine'] = engine
-    dp['data'] = {'item_name': '', 'item_url': '', 'items': []}
+    dp['data'] = {}
 
     dp.include_routers(
         start_router,

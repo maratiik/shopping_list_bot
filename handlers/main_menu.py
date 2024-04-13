@@ -54,7 +54,7 @@ async def btn_list(callback: CallbackQuery, state: FSMContext, engine: Engine, d
         dao = ItemDAO(session)
         items = dao.get_all_with_fav_data(callback.message.chat.id)
 
-    data['items'] = items
+    data[callback.message.chat.id] = items
 
     await callback.message.edit_text(
         text=texts.LIST_MENU_TEXT,

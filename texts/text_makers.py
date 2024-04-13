@@ -1,6 +1,7 @@
 from database.item_data import ItemData
 from texts.texts import ITEM_CB, ADD_TO_FAV_CB
-from texts.texts import ADD_PRIRORITY_CB, HTTP
+from texts.texts import ADD_PRIRORITY_CB, CHECK_CB
+from texts.texts import HTTP
 
 import logging
 
@@ -27,17 +28,25 @@ def get_item_url(item: ItemData) -> str:
     return item.url if len(item.url) else None
 
 
+def get_item_text_fav(item: ItemData) -> str:
+    return item.name
+
+
 # callbacks
 def get_item_cb(item: ItemData) -> str:
     return f"{ITEM_CB}{item.name}{item.url}"
 
 
 def get_item_add_to_fav_cb(item: ItemData) -> str:
-    return f"{ADD_TO_FAV_CB}{item.name}"
+    return f"{ADD_TO_FAV_CB}{item.name}{item.url}"
 
 
 def get_item_add_priority_cb(item: ItemData) -> str:
-    return f"{ADD_PRIRORITY_CB}{item.name}"
+    return f"{ADD_PRIRORITY_CB}{item.name}{item.url}"
+
+
+def get_item_check_cb(item: ItemData) -> str:
+    return f"{CHECK_CB}{item.name}{item.url}"
 
 
 def split_url(item_data: str) -> tuple[str, str]:

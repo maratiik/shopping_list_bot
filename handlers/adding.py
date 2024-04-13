@@ -57,9 +57,11 @@ async def add_item(message: Message, state: FSMContext, bot: Bot, engine: Engine
     chat = await bot.get_chat(chat_id=message.chat.id)
     emojis = chat.available_reactions
 
+    logging.debug(f"CHECKING AVAILABLE REACTIONS: {emojis}")
+
     if emojis != None:
         if len(emojis):
-            response_emoji = choice(emojis)
+            response_emoji = choice(emojis).emoji
             await message.react([ReactionTypeEmoji(emoji=response_emoji)])
     else:
         await message.react([ReactionTypeEmoji(emoji=choice(texts.EMOJIS))])

@@ -105,7 +105,7 @@ def adding_keyboard(items: list[ItemData]) -> InlineKeyboardMarkup:
 
     for item in items:
         builder.add(InlineKeyboardButton(
-            text=tm.get_item_text_general(item),
+            text=tm.get_item_text_fav(item),
             callback_data=tm.get_item_cb(item)
         ))
 
